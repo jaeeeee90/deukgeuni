@@ -124,19 +124,3 @@ export function SettingsPage() {
     </section>
   )
 }
-
-export function RoomDetailPage({ room, onBack }) {
-  return (
-    <section className="placeholder-screen room-detail" aria-labelledby="detail-heading">
-      <button className="back-button" type="button" onClick={onBack}>
-        <span aria-hidden="true">←</span> 뒤로 가기
-      </button>
-      <div className={`placeholder-illustration room-card__art--${room.color}`} aria-hidden="true">
-        {room.symbol}
-      </div>
-      <p className="section-kicker">MY WORKOUT ROOM</p>
-      <h1 id="detail-heading">{room.name}</h1>
-      <p className="placeholder-copy">운동 기록 기능은 다음 단계에서 구현합니다.</p>
-    </section>
-  )
-}

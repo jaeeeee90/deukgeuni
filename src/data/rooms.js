@@ -2,7 +2,12 @@ export const rooms = [
   {
     id: 'after-work',
     name: '퇴근 후 헬스',
-    members: ['이지훈', '김민수', '박서연', '최유진'],
+    members: [
+      { id: 'member-lee-jihoon', name: '이지훈' },
+      { id: 'member-kim-minsu', name: '김민수' },
+      { id: 'member-park-seoyeon', name: '박서연' },
+      { id: 'member-choi-yujin', name: '최유진' },
+    ],
     exercises: ['벤치프레스', '스쿼트'],
     color: 'peach',
     symbol: '💪',
@@ -10,7 +15,11 @@ export const rooms = [
   {
     id: 'weekend',
     name: '주말 운동팟',
-    members: ['이지훈', '김민수', '박서연'],
+    members: [
+      { id: 'member-lee-jihoon', name: '이지훈' },
+      { id: 'member-kim-minsu', name: '김민수' },
+      { id: 'member-park-seoyeon', name: '박서연' },
+    ],
     exercises: [],
     color: 'lavender',
     symbol: '🏋️',
@@ -18,9 +27,11 @@ export const rooms = [
   {
     id: 'solo',
     name: '나 혼자 운동',
-    members: ['김민수'],
+    members: [{ id: 'member-kim-minsu', name: '김민수' }],
     exercises: ['랫풀다운'],
     color: 'mint',
     symbol: '🧘',
   },
 ]
+
+export const currentUserId = 'member-kim-minsu'

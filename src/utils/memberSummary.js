@@ -1,11 +1,15 @@
 export function formatMemberSummary(members) {
-  const sortedNames = [...members].sort((first, second) =>
-    first.localeCompare(second, 'ko'),
+  const sortedMembers = [...members].sort((first, second) => {
+    const firstName = typeof first === 'string' ? first : first.name
+    const secondName = typeof second === 'string' ? second : second.name
+    return firstName.localeCompare(secondName, 'ko')
+  })
+  const visibleNames = sortedMembers.slice(0, 3).map((member) =>
+    typeof member === 'string' ? member : member.name,
   )
-  const visibleNames = sortedNames.slice(0, 3)
   const names = visibleNames.join(', ')
-  const overflowSuffix = sortedNames.length > 3 ? ' 등' : ''
-
+  const overflowSuffix = sortedMembers.length > 3 ? ' 등' : ''
   const displayedNames = names ? `${names}${overflowSuffix} ` : ''
+
   return `${displayedNames}(${members.length}명)`
 }

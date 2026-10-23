@@ -1,0 +1,25 @@
+export const exerciseCategories = ['가슴', '등', '하체', '어깨', '팔', '복근']
+
+export const exercises = [
+  { id: 'bench-press', category: '가슴', name: '벤치프레스' },
+  { id: 'incline-bench-press', category: '가슴', name: '인클라인 벤치프레스' },
+  { id: 'chest-press', category: '가슴', name: '체스트프레스' },
+  { id: 'dumbbell-fly', category: '가슴', name: '덤벨 플라이' },
+  { id: 'lat-pulldown', category: '등', name: '랫풀다운' },
+  { id: 'barbell-row', category: '등', name: '바벨로우' },
+  { id: 'seated-row', category: '등', name: '시티드로우' },
+  { id: 'pull-up', category: '등', name: '풀업' },
+  { id: 'squat', category: '하체', name: '스쿼트' },
+  { id: 'leg-press', category: '하체', name: '레그프레스' },
+  { id: 'leg-extension', category: '하체', name: '레그익스텐션' },
+  { id: 'leg-curl', category: '하체', name: '레그컬' },
+  { id: 'shoulder-press', category: '어깨', name: '숄더프레스' },
+  { id: 'lateral-raise', category: '어깨', name: '사이드 레터럴 레이즈' },
+  { id: 'rear-delt-fly', category: '어깨', name: '리어 델트 플라이' },
+  { id: 'barbell-curl', category: '팔', name: '바벨컬' },
+  { id: 'dumbbell-curl', category: '팔', name: '덤벨컬' },
+  { id: 'triceps-pushdown', category: '팔', name: '트라이셉스 푸시다운' },
+  { id: 'crunch', category: '복근', name: '크런치' },
+  { id: 'leg-raise', category: '복근', name: '레그레이즈' },
+  { id: 'plank', category: '복근', name: '플랭크' },
+]

@@ -4,10 +4,13 @@ import {
   CreateRoomPage,
   FriendsPage,
   HomePage,
-  RoomDetailPage,
+
   SettingsPage,
   StatisticsPage,
 } from './pages/Pages.jsx'
+import { currentUserId as initialCurrentUserId } from './data/rooms.js'
+import WorkoutRoomPage from './features/workouts/WorkoutRoomPage.jsx'
+import { useWorkoutStore } from './features/workouts/useWorkoutStore.js'
 import './App.css'
 
 const pages = {
@@ -21,6 +24,8 @@ const pages = {
 function App() {
   const [activeScreen, setActiveScreen] = useState('home')
   const [selectedRoom, setSelectedRoom] = useState(null)
+  const [currentUserId, setCurrentUserId] = useState(initialCurrentUserId)
+  const { state: workoutState, actions: workoutActions } = useWorkoutStore()
 
   const navigateTo = (screen) => {
     setSelectedRoom(null)
@@ -37,7 +42,14 @@ function App() {
     <div className="app-shell">
       <main className="main-content">
         {selectedRoom ? (
-          <RoomDetailPage room={selectedRoom} onBack={() => setSelectedRoom(null)} />
+          <WorkoutRoomPage
+            actions={workoutActions}
+            currentUserId={currentUserId}
+            onBack={() => setSelectedRoom(null)}
+            onUserChange={setCurrentUserId}
+            room={selectedRoom}
+            state={workoutState}
+          />
         ) : (
           <Page onOpenRoom={openRoom} />
         )}
