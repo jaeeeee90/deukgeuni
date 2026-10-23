@@ -1,5 +1,6 @@
-import { useCallback, useEffect, useMemo, useState } from 'react'
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
 import {
+  addCustomExercise,
   addExercise,
   addSet,
   createInitialWorkoutState,
@@ -20,47 +21,39 @@ function getBrowserStorage() {
 }
 
 export function useWorkoutStore() {
-  const [state, setState] = useState(() =>
+  const [loadResult] = useState(() =>
     getBrowserStorage()
       ? loadWorkoutState(getBrowserStorage())
-      : createInitialWorkoutState(),
+      : { state: createInitialWorkoutState(), error: 'workout-storage-read-failed', shouldPersist: false },
   )
+  const [state, setState] = useState(loadResult.state)
+  const stateRef = useRef(loadResult.state)
 
   useEffect(() => {
-    saveWorkoutState(state, getBrowserStorage())
-  }, [state])
+    stateRef.current = state
+    if (loadResult.shouldPersist) saveWorkoutState(state, getBrowserStorage())
+  }, [loadResult.shouldPersist, state])
 
-  const addRoomExercise = useCallback((roomId, date, exerciseId) => {
-    setState((current) => addExercise(current, roomId, date, exerciseId).state)
-  }, [])
-  const deleteRoomExercise = useCallback((entryId) => {
-    setState((current) => removeExercise(current, entryId))
-  }, [])
-  const deleteRoomData = useCallback((roomId) => {
-    setState((current) => removeRoomData(current, roomId))
-  }, [])
-  const recordSet = useCallback((entryId, userId, currentUserId, input) => {
-    setState((current) => addSet(current, entryId, userId, currentUserId, input).state)
-  }, [])
-  const editSet = useCallback((setId, currentUserId, input) => {
-    setState((current) => updateSet(current, setId, currentUserId, input).state)
-  }, [])
-  const deleteSet = useCallback((setId, currentUserId) => {
-    setState((current) => removeSet(current, setId, currentUserId).state)
-  }, [])
-  const changeAttendance = useCallback((roomId, date, userId, status) => {
-    setState((current) => setAttendance(current, roomId, date, userId, status))
-  }, [])
+  const mutate = useCallback((operation) => {
+    if (!loadResult.shouldPersist) return { state: stateRef.current, error: 'workout-storage-protected' }
+    const result = operation(stateRef.current)
+    if (!result.error) {
+      stateRef.current = result.state
+      setState(result.state)
+    }
+    return result
+  }, [loadResult.shouldPersist])
 
   const actions = useMemo(() => ({
-    addExercise: addRoomExercise,
-    removeExercise: deleteRoomExercise,
-    removeRoomData: deleteRoomData,
-    addSet: recordSet,
-    updateSet: editSet,
-    removeSet: deleteSet,
-    setAttendance: changeAttendance,
-  }), [addRoomExercise, deleteRoomExercise, deleteRoomData, recordSet, editSet, deleteSet, changeAttendance])
+    addExercise: (roomId, date, exerciseId) => mutate((current) => addExercise(current, roomId, date, exerciseId)),
+    addCustomExercise: (input) => mutate((current) => addCustomExercise(current, input)),
+    removeExercise: (entryId) => mutate((current) => ({ state: removeExercise(current, entryId), error: null })),
+    removeRoomData: (roomId) => mutate((current) => ({ state: removeRoomData(current, roomId), error: null })),
+    addSet: (entryId, userId, currentUserId, input, recordingMethod) => mutate((current) => addSet(current, entryId, userId, currentUserId, input, recordingMethod)),
+    updateSet: (setId, currentUserId, input) => mutate((current) => updateSet(current, setId, currentUserId, input)),
+    removeSet: (setId, currentUserId) => mutate((current) => removeSet(current, setId, currentUserId)),
+    setAttendance: (roomId, date, userId, status) => mutate((current) => ({ state: setAttendance(current, roomId, date, userId, status), error: null })),
+  }), [mutate])
 
-  return { state, actions }
+  return { state, actions, storageError: loadResult.error }
 }

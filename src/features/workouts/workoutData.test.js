@@ -2,9 +2,11 @@ import assert from 'node:assert/strict'
 import test from 'node:test'
 import {
   addExercise,
+  addCustomExercise,
   addSet,
   createInitialWorkoutState,
   getLocalDateKey,
+  migrateWorkoutState,
   removeRoomData,
   removeExercise,
   removeSet,
@@ -154,4 +156,72 @@ test('참여 상태는 방과 날짜별로 독립적으로 관리한다', () => 
   state = setAttendance(state, 'room-b', today, 'kim', 'not_attending')
 
   assert.equal(state.attendance.length, 3)
+})
+
+test('유효한 v1 기록은 ID와 무게·횟수를 보존한 v2로 변환한다', () => {
+  const v1 = {
+    version: 1,
+    exercises: [{ id: 'entry-1', roomId: 'room-a', date: today, exerciseId: 'bench-press' }],
+    sets: [{ id: 'set-1', entryId: 'entry-1', userId: 'kim', order: 1, weight: 42.5, reps: 10 }],
+    attendance: [{ id: 'attendance-1', roomId: 'room-a', date: today, userId: 'kim', status: 'attending' }],
+  }
+
+  const result = migrateWorkoutState(v1)
+
+  assert.equal(result.error, null)
+  assert.equal(result.migrated, true)
+  assert.equal(result.state.version, 2)
+  assert.equal(result.state.exercises[0].exerciseId, 'bench-press')
+  assert.deepEqual(result.state.sets[0], {
+    id: 'set-1', entryId: 'entry-1', userId: 'kim', order: 1, weight: 42.5, reps: 10,
+    recordingMethod: 'weight-reps', recordedOrder: 1,
+  })
+})
+
+test('사용자 운동은 같은 방에서 이름 중복을 막고 다른 방에는 허용한다', () => {
+  const first = addCustomExercise(createInitialWorkoutState(), {
+    roomId: 'room-a', name: '  케틀벨 스윙 ', categories: ['하체', '복근·코어'], recordingMethod: 'reps',
+  })
+  const duplicate = addCustomExercise(first.state, {
+    roomId: 'room-a', name: '케틀벨 스윙', categories: ['하체'], recordingMethod: 'reps',
+  })
+  const otherRoom = addCustomExercise(first.state, {
+    roomId: 'room-b', name: '케틀벨 스윙', categories: ['하체'], recordingMethod: 'reps',
+  })
+
+  assert.equal(first.error, null)
+  assert.equal(first.exercise.name, '케틀벨 스윙')
+  assert.equal(duplicate.error, 'duplicate-custom-exercise')
+  assert.equal(otherRoom.error, null)
+})
+
+test('사용자 운동은 같은 방의 마스터 운동 이름과도 중복 등록할 수 없다', () => {
+  const result = addCustomExercise(createInitialWorkoutState(), {
+    roomId: 'room-a', name: ' 벤치프레스 ', categories: ['가슴'], recordingMethod: 'weight-reps',
+  })
+
+  assert.equal(result.error, 'duplicate-master-exercise')
+})
+
+test('기록 방식에 맞는 값만 세트로 저장한다', () => {
+  const pullUp = addExercise(createInitialWorkoutState(), 'room-a', today, 'pull-up')
+  const plank = addExercise(pullUp.state, 'room-a', today, 'plank')
+  const running = addExercise(plank.state, 'room-a', today, 'running')
+  const reps = addSet(running.state, pullUp.entry.id, 'kim', 'kim', { reps: '12' }, 'reps')
+  const duration = addSet(running.state, plank.entry.id, 'kim', 'kim', { duration: '90', durationUnit: 'seconds' }, 'duration')
+  const distance = addSet(running.state, running.entry.id, 'kim', 'kim', { durationMinutes: '30', distanceKm: '5.2' }, 'duration-distance')
+  const invalid = addSet(running.state, pullUp.entry.id, 'kim', 'kim', { reps: '2.5' }, 'reps')
+
+  assert.equal(reps.error, null)
+  assert.deepEqual(duration.set, { id: duration.set.id, entryId: plank.entry.id, userId: 'kim', order: 1, recordingMethod: 'duration', durationSeconds: 90, recordedOrder: 1 })
+  assert.equal(distance.set.distanceKm, 5.2)
+  assert.equal(invalid.error, 'invalid-reps')
+})
+
+test('세트는 연결된 운동의 기록 방식과 다른 방식으로 저장할 수 없다', () => {
+  const bench = addBench(createInitialWorkoutState())
+  const result = addSet(bench.state, bench.entry.id, 'kim', 'kim', { duration: '30', durationUnit: 'seconds' }, 'duration')
+
+  assert.equal(result.error, 'recording-method-mismatch')
+  assert.equal(result.state, bench.state)
 })

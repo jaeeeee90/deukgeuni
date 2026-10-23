@@ -1607,3 +1607,135 @@
     padding-left: 14px;
   }
 }
+
+.storage-protection-notice {
+  margin: 10px 0 0;
+  padding: 10px 11px;
+  border: 1px solid #eacdc3;
+  border-radius: 11px;
+  color: #a55f52;
+  background: #fff3ee;
+  font-size: 10px;
+  line-height: 1.55;
+}
+
+.exercise-search {
+  display: flex;
+  align-items: center;
+  gap: 7px;
+  min-height: 42px;
+  margin-top: 15px;
+  padding: 0 11px;
+  border: 1px solid #eee7e2;
+  border-radius: 12px;
+  color: #c18a71;
+  background: #fff;
+}
+
+.exercise-search span { font-size: 19px; }
+
+.exercise-search input {
+  width: 100%;
+  min-width: 0;
+  border: 0;
+  outline: 0;
+  color: #514b54;
+  background: transparent;
+  font: inherit;
+  font-size: 12px;
+}
+
+.picker-section { margin-top: 15px; }
+
+.picker-section > p,
+.direct-exercise-label {
+  display: block;
+  margin: 0 0 7px;
+  color: #9b8175;
+  font-size: 10px;
+  font-weight: 700;
+}
+
+.exercise-choice > span:first-child { display: grid; gap: 2px; }
+.exercise-choice > span:first-child b { font-weight: 600; }
+.exercise-choice > span:first-child small { color: #a39ca1; font-size: 9px; }
+
+.picker-empty {
+  margin-top: 15px;
+  padding: 17px 10px;
+  border: 1px dashed #eadfd8;
+  border-radius: 14px;
+  color: #8e8589;
+  background: #fffdfb;
+  text-align: center;
+  font-size: 11px;
+}
+
+.picker-empty p { margin: 0 0 5px; color: #655d64; font-weight: 700; }
+
+.direct-exercise-toggle {
+  display: block;
+  width: 100%;
+  min-height: 39px;
+  margin-top: 14px;
+  border: 1px dashed #e9cbbf;
+  border-radius: 11px;
+  color: #c26f58;
+  background: #fff8f4;
+  font: inherit;
+  font-size: 11px;
+  cursor: pointer;
+}
+
+.direct-exercise-form {
+  margin-top: 12px;
+  padding: 13px;
+  border: 1px solid #f0e3dd;
+  border-radius: 15px;
+  background: #fff9f6;
+}
+
+.direct-exercise-form__title {
+  margin: 0 0 10px;
+  color: #5f5962;
+  font-family: 'Gowun Dodum', sans-serif;
+  font-size: 14px;
+  font-weight: 700;
+}
+
+.direct-category-list { display: flex; flex-wrap: wrap; gap: 6px; margin: 0 0 12px; }
+
+.direct-category {
+  min-height: 30px;
+  padding: 0 9px;
+  border: 1px solid #eadfd8;
+  border-radius: 9px;
+  color: #887e83;
+  background: #fff;
+  font: inherit;
+  font-size: 10px;
+  cursor: pointer;
+}
+
+.direct-category.is-selected { border-color: #f29379; color: #fff; background: #f29379; }
+
+.direct-record-method,
+.workout-unit-select select {
+  min-height: 35px;
+  padding: 0 8px;
+  border: 1px solid #eee6e1;
+  border-radius: 9px;
+  color: #514b54;
+  background: #fff;
+  font: inherit;
+  font-size: 11px;
+}
+
+.direct-record-method { width: 100%; margin-bottom: 10px; }
+.direct-exercise-form .add-exercise-button { width: 100%; justify-content: center; }
+.workout-unit-select { display: flex; min-width: 0; align-items: center; }
+.workout-set-form--duration,
+.workout-set-form--reps { grid-template-columns: minmax(0, 1fr) auto; }
+.workout-set-form--duration-distance { grid-template-columns: minmax(0, 1fr) minmax(0, 1fr) auto; }
+.workout-set-edit .workout-set-input { width: 86px; }
+button:disabled { opacity: 0.52; cursor: not-allowed; }

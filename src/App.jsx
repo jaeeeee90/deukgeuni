@@ -27,7 +27,7 @@ function App() {
   const [selectedRoomId, setSelectedRoomId] = useState(null)
   const [currentUserId, setCurrentUserId] = useState(initialCurrentUserId)
   const { state: roomState, actions: roomActions } = useRoomStore()
-  const { state: workoutState, actions: workoutActions } = useWorkoutStore()
+  const { state: workoutState, actions: workoutActions, storageError } = useWorkoutStore()
   const allRooms = useMemo(() => [...roomState.rooms, ...exampleRooms], [roomState.rooms])
   const selectedRoom = allRooms.find((room) => room.id === selectedRoomId) ?? null
   const currentUser = allRooms
@@ -83,6 +83,7 @@ function App() {
             onUserChange={setCurrentUserId}
             room={selectedRoom}
             state={workoutState}
+            storageError={storageError}
           />
         ) : (
           <Page currentUser={currentUser} onCreateRoom={createRoom} onOpenRoom={openRoom} rooms={allRooms} />

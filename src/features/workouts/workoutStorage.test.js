@@ -11,40 +11,62 @@ function createMemoryStorage(initial = {}) {
   }
 }
 
-test('저장 기록이 없으면 빈 임시 상태로 시작한다', () => {
-  assert.deepEqual(loadWorkoutState(createMemoryStorage()), createInitialWorkoutState())
+test('저장 기록이 없으면 쓰기 가능한 빈 v2 상태로 시작한다', () => {
+  const result = loadWorkoutState(createMemoryStorage())
+
+  assert.equal(result.error, null)
+  assert.equal(result.shouldPersist, true)
+  assert.deepEqual(result.state, createInitialWorkoutState())
 })
 
-test('저장된 운동방·날짜별 기록을 다시 불러온다', () => {
+test('유효한 v1 저장 기록은 원본을 읽은 뒤 쓰기 가능한 v2 상태로 변환한다', () => {
+  const legacy = {
+    version: 1,
+    exercises: [{ id: 'entry-1', roomId: 'room-a', date: '2026-10-23', exerciseId: 'bench-press' }],
+    sets: [{ id: 'set-1', entryId: 'entry-1', userId: 'kim', order: 1, weight: 40, reps: 12 }],
+    attendance: [],
+  }
+  const storage = createMemoryStorage({ [STORAGE_KEY]: JSON.stringify(legacy) })
+  const result = loadWorkoutState(storage)
+
+  assert.equal(result.error, null)
+  assert.equal(result.migrated, true)
+  assert.equal(result.state.version, 2)
+  assert.equal(result.state.sets[0].weight, 40)
+  assert.equal(JSON.parse(storage.getItem(STORAGE_KEY)).version, 1)
+})
+
+test('변환 또는 JSON 오류는 기존 raw 저장 데이터를 보존하고 쓰기를 잠근다', () => {
+  const brokenRaw = '{bad json'
+  const malformedRaw = JSON.stringify({ version: 1, exercises: [null], sets: [], attendance: [] })
+
+  for (const raw of ['', brokenRaw, malformedRaw]) {
+    const storage = createMemoryStorage({ [STORAGE_KEY]: raw })
+    const result = loadWorkoutState(storage)
+
+    assert.notEqual(result.error, null)
+    assert.equal(result.shouldPersist, false)
+    assert.equal(storage.getItem(STORAGE_KEY), raw)
+  }
+})
+
+test('정상 v2 운동 상태를 다시 저장하고 불러온다', () => {
   let state = createInitialWorkoutState()
   state = addExercise(state, 'room-a', '2026-10-23', 'bench-press').state
   const storage = createMemoryStorage()
-  saveWorkoutState(state, storage)
 
-  assert.deepEqual(loadWorkoutState(storage), state)
+  assert.equal(saveWorkoutState(state, storage), true)
+  assert.deepEqual(loadWorkoutState(storage).state, state)
 })
 
-test('손상되거나 다른 버전의 저장 데이터는 빈 상태로 복구한다', () => {
-  const brokenJson = createMemoryStorage({ [STORAGE_KEY]: '{bad json' })
-  const unsupported = createMemoryStorage({ [STORAGE_KEY]: JSON.stringify({ version: 99 }) })
-  const malformedEntry = createMemoryStorage({ [STORAGE_KEY]: JSON.stringify({
-    version: 1,
-    exercises: [null],
-    sets: [],
-    attendance: [],
-  }) })
-
-  assert.deepEqual(loadWorkoutState(brokenJson), createInitialWorkoutState())
-  assert.deepEqual(loadWorkoutState(unsupported), createInitialWorkoutState())
-  assert.deepEqual(loadWorkoutState(malformedEntry), createInitialWorkoutState())
-})
-
-test('브라우저 저장소 접근이 차단되어도 읽기·쓰기가 예외를 전달하지 않는다', () => {
+test('브라우저 저장소 접근이 차단되어도 오류 결과를 반환하고 예외를 전달하지 않는다', () => {
   const blockedStorage = {
     getItem() { throw new Error('blocked') },
     setItem() { throw new Error('blocked') },
   }
 
-  assert.deepEqual(loadWorkoutState(blockedStorage), createInitialWorkoutState())
+  const result = loadWorkoutState(blockedStorage)
+  assert.notEqual(result.error, null)
+  assert.equal(result.shouldPersist, false)
   assert.equal(saveWorkoutState(createInitialWorkoutState(), blockedStorage), false)
 })
