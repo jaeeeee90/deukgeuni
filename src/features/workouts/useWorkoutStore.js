@@ -3,6 +3,7 @@ import {
   addExercise,
   addSet,
   createInitialWorkoutState,
+  removeRoomData,
   removeExercise,
   removeSet,
   setAttendance,
@@ -35,6 +36,9 @@ export function useWorkoutStore() {
   const deleteRoomExercise = useCallback((entryId) => {
     setState((current) => removeExercise(current, entryId))
   }, [])
+  const deleteRoomData = useCallback((roomId) => {
+    setState((current) => removeRoomData(current, roomId))
+  }, [])
   const recordSet = useCallback((entryId, userId, currentUserId, input) => {
     setState((current) => addSet(current, entryId, userId, currentUserId, input).state)
   }, [])
@@ -51,11 +55,12 @@ export function useWorkoutStore() {
   const actions = useMemo(() => ({
     addExercise: addRoomExercise,
     removeExercise: deleteRoomExercise,
+    removeRoomData: deleteRoomData,
     addSet: recordSet,
     updateSet: editSet,
     removeSet: deleteSet,
     setAttendance: changeAttendance,
-  }), [addRoomExercise, deleteRoomExercise, recordSet, editSet, deleteSet, changeAttendance])
+  }), [addRoomExercise, deleteRoomExercise, deleteRoomData, recordSet, editSet, deleteSet, changeAttendance])
 
   return { state, actions }
 }

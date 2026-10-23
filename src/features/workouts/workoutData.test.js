@@ -5,6 +5,7 @@ import {
   addSet,
   createInitialWorkoutState,
   getLocalDateKey,
+  removeRoomData,
   removeExercise,
   removeSet,
   setAttendance,
@@ -57,6 +58,22 @@ test('운동 삭제는 연결된 모든 세트만 삭제하고 참여 및 다른
   assert.equal(next.sets.length, 0)
   assert.equal(next.attendance[0].status, 'not_attending')
   assert.equal(next.exercises[0].date, '2026-10-24')
+})
+
+test('방 삭제는 해당 방의 종목·연결 세트·참여 상태만 정리한다', () => {
+  const roomA = addBench(createInitialWorkoutState(), 'room-a')
+  const roomB = addBench(roomA.state, 'room-b')
+  let state = roomB.state
+  state = addSet(state, roomA.entry.id, 'kim', 'kim', { weight: 40, reps: 10 }).state
+  state = addSet(state, roomB.entry.id, 'lee', 'lee', { weight: 30, reps: 12 }).state
+  state = setAttendance(state, 'room-a', today, 'kim', 'attending')
+  state = setAttendance(state, 'room-b', today, 'lee', 'not_attending')
+
+  const next = removeRoomData(state, 'room-a')
+
+  assert.deepEqual(next.exercises.map((entry) => entry.roomId), ['room-b'])
+  assert.deepEqual(next.sets.map((set) => set.entryId), [roomB.entry.id])
+  assert.deepEqual(next.attendance.map((item) => item.roomId), ['room-b'])
 })
 
 test('세트 중량은 0 이상의 소수도 허용하고 반복 횟수는 양의 정수만 허용한다', () => {

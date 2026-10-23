@@ -51,6 +51,20 @@ export function removeExercise(state, entryId) {
   }
 }
 
+export function removeRoomData(state, roomId) {
+  const removedEntryIds = new Set(
+    state.exercises
+      .filter((entry) => entry.roomId === roomId)
+      .map((entry) => entry.id),
+  )
+  return {
+    ...state,
+    exercises: state.exercises.filter((entry) => entry.roomId !== roomId),
+    sets: state.sets.filter((set) => !removedEntryIds.has(set.entryId)),
+    attendance: state.attendance.filter((item) => item.roomId !== roomId),
+  }
+}
+
 export function setAttendance(state, roomId, date, userId, status) {
   if (!['attending', 'not_attending'].includes(status)) return state
 

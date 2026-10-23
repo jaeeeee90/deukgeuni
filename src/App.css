@@ -1439,3 +1439,171 @@
     grid-column: 1 / -1;
   }
 }
+
+.field-label b {
+  margin-left: 3px;
+  color: #df7d65;
+  font-size: 9px;
+}
+
+.field-label span {
+  color: #aaa1a4;
+  font-size: 9px;
+  font-weight: 400;
+}
+
+.field-count {
+  margin: 5px 2px 0;
+  color: #aaa1a4;
+  text-align: right;
+  font-size: 9px;
+}
+
+.text-area-field {
+  display: block;
+  min-height: 82px;
+  padding-top: 12px;
+  padding-bottom: 12px;
+  resize: vertical;
+  line-height: 1.55;
+}
+
+.room-icon-picker {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 8px;
+}
+
+.room-icon-choice {
+  display: grid;
+  min-width: 0;
+  min-height: 72px;
+  place-items: center;
+  gap: 2px;
+  padding: 7px 3px;
+  border: 1px solid transparent;
+  border-radius: 14px;
+  color: #766f75;
+  font: inherit;
+  cursor: pointer;
+}
+
+.room-icon-choice span {
+  font-size: 24px;
+}
+
+.room-icon-choice small {
+  overflow: hidden;
+  max-width: 100%;
+  font-size: 9px;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.room-icon-choice.is-selected {
+  border-color: #ef947b;
+  box-shadow: inset 0 0 0 1px #ef947b;
+}
+
+.create-room-button,
+.room-submit-button {
+  width: 100%;
+  min-height: 49px;
+  margin-top: 25px;
+}
+
+.room-form-error {
+  display: block;
+  margin-top: 10px;
+}
+
+.workout-room-description {
+  max-width: 360px;
+  margin: 6px 0 0;
+  color: #9a9194;
+  font-size: 10px;
+  line-height: 1.5;
+}
+
+.room-manage-button {
+  min-height: 31px;
+  margin-top: 11px;
+  padding: 0 10px;
+  border: 1px solid #f0e6e0;
+  border-radius: 10px;
+  color: #8c8184;
+  background: #fffaf6;
+  font: inherit;
+  font-size: 10px;
+  cursor: pointer;
+}
+
+.room-manage-button span {
+  margin-right: 3px;
+}
+
+.room-manage-dialog {
+  width: min(calc(100% - 28px), 500px);
+  max-height: min(88svh, 720px);
+  overflow-y: auto;
+  margin: auto;
+  padding: 19px 18px calc(19px + env(safe-area-inset-bottom));
+  border: 1px solid #f0ece8;
+  border-radius: 21px;
+  background: #fffaf6;
+  box-shadow: 0 12px 40px #30251f33;
+}
+
+.room-manage-dialog__heading {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.room-manage-dialog__heading h3,
+.room-delete-confirmation h3 {
+  margin: 2px 0 0;
+  color: var(--ink);
+  font-family: 'Gowun Dodum', sans-serif;
+  font-size: 19px;
+}
+
+.room-delete-trigger {
+  display: block;
+  margin: 17px auto 0;
+  padding: 6px;
+  border: 0;
+  color: #b06d62;
+  background: transparent;
+  font: inherit;
+  font-size: 10px;
+  text-decoration: underline;
+  cursor: pointer;
+}
+
+.room-delete-confirmation {
+  text-align: center;
+}
+
+.room-delete-confirmation p {
+  margin: 10px 0 17px;
+  color: #8d8588;
+  font-size: 11px;
+  line-height: 1.7;
+}
+
+.room-delete-confirmation p b {
+  color: #5f5962;
+}
+
+@media (max-width: 360px) {
+  .room-icon-choice {
+    min-height: 66px;
+  }
+
+  .room-manage-dialog {
+    width: min(calc(100% - 20px), 500px);
+    padding-right: 14px;
+    padding-left: 14px;
+  }
+}

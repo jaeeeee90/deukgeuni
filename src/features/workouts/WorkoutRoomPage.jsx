@@ -1,5 +1,6 @@
 import { useRef, useState } from 'react'
 import { formatMemberSummary } from '../../utils/memberSummary.js'
+import RoomManageDialog from '../rooms/RoomManageDialog.jsx'
 import {
   getAttendance,
   getExercisesForDate,
@@ -207,13 +208,14 @@ function ExerciseEntryCard({ entry, room, members, currentUserId, state, actions
   )
 }
 
-function WorkoutRoomPage({ room, onBack, state, currentUserId, onUserChange, actions }) {
+function WorkoutRoomPage({ room, onBack, onDeleteRoom, onUpdateRoom, state, currentUserId, onUserChange, actions }) {
   const [date, setDate] = useState(() => getLocalDateKey())
   const [pickerOpen, setPickerOpen] = useState(false)
   const [category, setCategory] = useState(exerciseCategories[0])
   const [pickerNotice, setPickerNotice] = useState('')
   const [notice, setNotice] = useState('')
   const [deleteEntryId, setDeleteEntryId] = useState(null)
+  const [managingRoom, setManagingRoom] = useState(false)
   const touchStart = useRef(null)
   const currentEntries = getExercisesForDate(state, room.id, date)
   const sortedMembers = [...room.members].sort((first, second) => first.name.localeCompare(second.name, 'ko'))
@@ -244,15 +246,17 @@ function WorkoutRoomPage({ room, onBack, state, currentUserId, onUserChange, act
     setNotice(`${exercise.name}을(를) 추가했어요.`)
   }
   const today = getLocalDateKey()
+  const canManageRoom = room.creatorId === currentUserId
 
   return (
     <section className="workout-room-page" onTouchStart={handleTouchStart} onTouchEnd={handleTouchEnd}>
       <header className="workout-room-header">
         <button className="back-button workout-room-back" type="button" onClick={onBack}><span aria-hidden="true">←</span> 운동방 목록</button>
         <div className="workout-room-heading">
-          <div><p className="section-kicker">WORKOUT ROOM</p><h1>{room.name}</h1><p className="workout-room-members">👥 {formatMemberSummary(room.members)}</p></div>
+          <div><p className="section-kicker">WORKOUT ROOM</p><h1>{room.name}</h1><p className="workout-room-members">👥 {formatMemberSummary(room.members)}</p>{room.description && <p className="workout-room-description">{room.description}</p>}</div>
           <span className={`workout-room-mark room-card__art--${room.color}`} aria-hidden="true">{room.symbol}</span>
         </div>
+        {canManageRoom && <button className="room-manage-button" type="button" onClick={() => setManagingRoom(true)}><span aria-hidden="true">⚙</span> 방 관리</button>}
         <label className="dev-user-picker"><span>기록 확인 사용자</span><select aria-label="개발용 현재 사용자" value={currentUserId} onChange={(event) => onUserChange(event.target.value)}>
           {sortedMembers.map((member) => <option key={member.id} value={member.id}>{member.name}</option>)}
         </select></label>
@@ -287,6 +291,16 @@ function WorkoutRoomPage({ room, onBack, state, currentUserId, onUserChange, act
         exerciseName={deleteExercise.name}
         onCancel={() => setDeleteEntryId(null)}
         onConfirm={() => { actions.removeExercise(deleteEntryId); setDeleteEntryId(null); setNotice(`${deleteExercise.name}과 연결된 모든 세트 기록을 삭제했어요.`) }}
+      />}
+      {managingRoom && <RoomManageDialog
+        room={room}
+        onClose={() => setManagingRoom(false)}
+        onDelete={onDeleteRoom}
+        onSave={(input) => {
+          const result = onUpdateRoom(input)
+          if (!result?.error) setManagingRoom(false)
+          return result
+        }}
       />}
     </section>
   )

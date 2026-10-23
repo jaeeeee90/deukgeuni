@@ -1,9 +1,10 @@
+import { useState } from 'react'
 import RoomCard from '../components/RoomCard.jsx'
-import { rooms } from '../data/rooms.js'
+import { roomIconOptions } from '../features/rooms/roomData.js'
 
 const exampleFriends = ['김서윤', '박하준', '이도윤']
 
-export function HomePage({ onOpenRoom }) {
+export function HomePage({ onOpenRoom, rooms }) {
   return (
     <>
       <header className="welcome-header">
@@ -53,25 +54,43 @@ export function FriendsPage() {
   )
 }
 
-export function CreateRoomPage() {
+export function CreateRoomPage({ currentUser, onCreateRoom }) {
+  const [name, setName] = useState('')
+  const [description, setDescription] = useState('')
+  const [selectedIcon, setSelectedIcon] = useState(`${roomIconOptions[0].symbol}:${roomIconOptions[0].color}`)
+  const [error, setError] = useState('')
+  const selected = roomIconOptions.find((option) => `${option.symbol}:${option.color}` === selectedIcon)
+
+  const createRoom = (event) => {
+    event.preventDefault()
+    const result = onCreateRoom({ name, description, symbol: selected?.symbol, color: selected?.color }, currentUser)
+    if (result?.error === 'invalid-name') setError('운동방 이름은 공백 없이 1~30자로 입력해 주세요.')
+    else if (result?.error === 'invalid-description') setError('운동방 설명은 100자 이하로 입력해 주세요.')
+    else if (result?.error) setError('운동방을 만들지 못했어요. 다시 시도해 주세요.')
+  }
+
   return (
-    <section className="page-section" aria-labelledby="create-heading">
+    <section className="page-section create-room-page" aria-labelledby="create-heading">
       <p className="section-kicker">LET’S WORK OUT TOGETHER</p>
       <h1 className="page-title" id="create-heading">새 운동방 만들기</h1>
-      <p className="page-description">운동할 친구들과 함께할 방을 준비해요.</p>
-      <label className="field-label" htmlFor="room-name">운동방 이름</label>
-      <input className="text-field" id="room-name" type="text" placeholder="예: 아침 러닝 크루" />
-      <div className="invite-heading">
-        <span className="field-label">친구 초대</span>
-        <span className="section-note">기능 준비 중</span>
-      </div>
-      <div className="invite-placeholder">
-        <span aria-hidden="true">＋</span>
-        <span>친구 초대 기능은 다음 단계에서 준비할게요.</span>
-      </div>
-      <button className="home-button create-room-button" type="button" disabled>
-        운동방 만들기
-      </button>
+      <p className="page-description">함께 운동할 방을 만들고 오늘의 기록을 시작해요.</p>
+      <form noValidate onSubmit={createRoom}>
+        <label className="field-label" htmlFor="room-name">운동방 이름 <b>필수</b></label>
+        <input className="text-field" id="room-name" maxLength="30" placeholder="예: 아침 러닝 크루" value={name} onChange={(event) => setName(event.target.value)} />
+        <p className="field-count">{name.length}/30</p>
+        <label className="field-label" htmlFor="room-description">운동방 설명 <span>선택</span></label>
+        <textarea className="text-field text-area-field" id="room-description" maxLength="100" placeholder="예: 평일 아침 7시, 같이 가볍게 달려요." value={description} onChange={(event) => setDescription(event.target.value)} />
+        <p className="field-count">{description.length}/100</p>
+        <span className="field-label">운동방 아이콘</span>
+        <div className="room-icon-picker" role="radiogroup" aria-label="운동방 아이콘 선택">
+          {roomIconOptions.map((option) => {
+            const value = `${option.symbol}:${option.color}`
+            return <button className={`room-icon-choice room-card__art--${option.color}${selectedIcon === value ? ' is-selected' : ''}`} aria-checked={selectedIcon === value} key={value} onClick={() => setSelectedIcon(value)} role="radio" type="button"><span aria-hidden="true">{option.symbol}</span><small>{option.label}</small></button>
+          })}
+        </div>
+        {error && <p className="field-error room-form-error" role="alert">{error}</p>}
+        <button className="home-button create-room-button" type="submit">운동방 만들기</button>
+      </form>
     </section>
   )
 }
