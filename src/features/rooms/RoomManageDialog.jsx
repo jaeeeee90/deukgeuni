@@ -14,17 +14,34 @@ function RoomManageDialog({ room, onClose, onDelete, onSave }) {
   const [selectedIcon, setSelectedIcon] = useState(`${room.symbol}:${room.color}`)
   const [error, setError] = useState('')
   const [confirmingDelete, setConfirmingDelete] = useState(false)
+  const [saving, setSaving] = useState(false)
   const selected = roomIconOptions.find((option) => `${option.symbol}:${option.color}` === selectedIcon)
 
-  const save = (event) => {
+  const save = async (event) => {
     event.preventDefault()
-    const result = onSave({ name, description, symbol: selected?.symbol, color: selected?.color })
-    if (result?.error) setError(getErrorMessage(result.error))
+    setError('')
+    setSaving(true)
+    try {
+      const result = await onSave({ name, description, symbol: selected?.symbol, color: selected?.color })
+      if (result?.error) setError(getErrorMessage(result.error))
+    } catch {
+      setError('방 정보를 저장하지 못했어요. 잠시 후 다시 시도해 주세요.')
+    } finally {
+      setSaving(false)
+    }
   }
 
-  const remove = () => {
-    const result = onDelete()
-    if (result?.error) setError('운동방을 삭제하지 못했어요. 다시 시도해 주세요.')
+  const remove = async () => {
+    setError('')
+    setSaving(true)
+    try {
+      const result = await onDelete()
+      if (result?.error) setError('운동방을 삭제하지 못했어요. 다시 시도해 주세요.')
+    } catch {
+      setError('운동방을 삭제하지 못했어요. 잠시 후 다시 시도해 주세요.')
+    } finally {
+      setSaving(false)
+    }
   }
 
   return (
@@ -33,7 +50,7 @@ function RoomManageDialog({ room, onClose, onDelete, onSave }) {
         {!confirmingDelete ? <form noValidate onSubmit={save}>
           <div className="room-manage-dialog__heading">
             <div><p className="section-kicker">ROOM MANAGEMENT</p><h3 id="room-manage-title">운동방 관리</h3></div>
-            <button className="picker-close" type="button" aria-label="운동방 관리 닫기" onClick={onClose}>×</button>
+            <button className="picker-close" disabled={saving} type="button" aria-label="운동방 관리 닫기" onClick={onClose}>×</button>
           </div>
           <label className="field-label" htmlFor="manage-room-name">운동방 이름</label>
           <input className="text-field" id="manage-room-name" maxLength="30" value={name} onChange={(event) => setName(event.target.value)} />
@@ -44,20 +61,20 @@ function RoomManageDialog({ room, onClose, onDelete, onSave }) {
           <div className="room-icon-picker" role="radiogroup" aria-label="운동방 아이콘 선택">
             {roomIconOptions.map((option) => {
               const value = `${option.symbol}:${option.color}`
-              return <button className={`room-icon-choice room-card__art--${option.color}${selectedIcon === value ? ' is-selected' : ''}`} aria-checked={selectedIcon === value} key={value} onClick={() => setSelectedIcon(value)} role="radio" type="button"><span aria-hidden="true">{option.symbol}</span><small>{option.label}</small></button>
+              return <button className={`room-icon-choice room-card__art--${option.color}${selectedIcon === value ? ' is-selected' : ''}`} aria-checked={selectedIcon === value} disabled={saving} key={value} onClick={() => setSelectedIcon(value)} role="radio" type="button"><span aria-hidden="true">{option.symbol}</span><small>{option.label}</small></button>
             })}
           </div>
           {error && <p className="field-error room-form-error" role="alert">{error}</p>}
-          <button className="home-button room-submit-button" type="submit">변경 사항 저장</button>
-          <button className="room-delete-trigger" type="button" onClick={() => { setError(''); setConfirmingDelete(true) }}>운동방 삭제</button>
+          <button className="home-button room-submit-button" disabled={saving} type="submit">{saving ? '저장 중…' : '변경 사항 저장'}</button>
+          <button className="room-delete-trigger" disabled={saving} type="button" onClick={() => { setError(''); setConfirmingDelete(true) }}>운동방 삭제</button>
         </form> : <div className="room-delete-confirmation">
           <div className="delete-dialog__icon" aria-hidden="true">!</div>
           <h3>운동방을 삭제할까요?</h3>
-          <p><b>{room.name}</b>과(와) 해당 방의 모든 날짜별 운동 종목, 세트 기록, 참여 상태가 함께 삭제됩니다. 이 작업은 되돌릴 수 없어요.</p>
+          <p>{room.source === 'remote' ? <><b>{room.name}</b>을(를) 목록에서 숨깁니다. 이 브라우저의 임시 운동 기록은 삭제되지 않아요.</> : <><b>{room.name}</b>과(와) 해당 방의 모든 날짜별 운동 종목, 세트 기록, 참여 상태가 함께 삭제됩니다. 이 작업은 되돌릴 수 없어요.</>}</p>
           {error && <p className="field-error room-form-error" role="alert">{error}</p>}
           <div className="delete-dialog__actions">
-            <button className="secondary-action" type="button" onClick={() => setConfirmingDelete(false)}>취소</button>
-            <button className="danger-action" type="button" onClick={remove}>운동방 삭제</button>
+            <button className="secondary-action" disabled={saving} type="button" onClick={() => setConfirmingDelete(false)}>취소</button>
+            <button className="danger-action" disabled={saving} type="button" onClick={remove}>{saving ? '삭제 중…' : '운동방 삭제'}</button>
           </div>
         </div>}
       </section>

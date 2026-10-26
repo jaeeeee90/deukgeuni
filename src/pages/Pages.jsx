@@ -4,7 +4,7 @@ import { roomIconOptions } from '../features/rooms/roomData.js'
 
 const exampleFriends = ['김서윤', '박하준', '이도윤']
 
-export function HomePage({ onOpenRoom, rooms }) {
+export function HomePage({ onOpenRoom, onRetryRooms, roomError, roomLoading, rooms }) {
   return (
     <>
       <header className="welcome-header">
@@ -22,6 +22,8 @@ export function HomePage({ onOpenRoom, rooms }) {
           </div>
           <span className="section-note">오늘도 파이팅!</span>
         </div>
+        {roomLoading && <p className="room-sync-note" role="status">온라인 운동방을 불러오고 있어요.</p>}
+        {roomError && <div className="room-sync-error" role="alert"><span>{roomError}</span><button type="button" onClick={onRetryRooms}>다시 시도</button></div>}
         <div className="room-list">
           {rooms.map((room) => (
             <RoomCard key={room.id} room={room} onSelect={onOpenRoom} />
@@ -54,19 +56,28 @@ export function FriendsPage() {
   )
 }
 
-export function CreateRoomPage({ currentUser, onCreateRoom }) {
+export function CreateRoomPage({ currentUser, onCreateRoom, roomSaving }) {
   const [name, setName] = useState('')
   const [description, setDescription] = useState('')
   const [selectedIcon, setSelectedIcon] = useState(`${roomIconOptions[0].symbol}:${roomIconOptions[0].color}`)
   const [error, setError] = useState('')
+  const [submitting, setSubmitting] = useState(false)
   const selected = roomIconOptions.find((option) => `${option.symbol}:${option.color}` === selectedIcon)
 
-  const createRoom = (event) => {
+  const createRoom = async (event) => {
     event.preventDefault()
-    const result = onCreateRoom({ name, description, symbol: selected?.symbol, color: selected?.color }, currentUser)
-    if (result?.error === 'invalid-name') setError('운동방 이름은 공백 없이 1~30자로 입력해 주세요.')
-    else if (result?.error === 'invalid-description') setError('운동방 설명은 100자 이하로 입력해 주세요.')
-    else if (result?.error) setError('운동방을 만들지 못했어요. 다시 시도해 주세요.')
+    setError('')
+    setSubmitting(true)
+    try {
+      const result = await onCreateRoom({ name, description, symbol: selected?.symbol, color: selected?.color }, currentUser)
+      if (result?.error === 'invalid-name') setError('운동방 이름은 공백 없이 1~30자로 입력해 주세요.')
+      else if (result?.error === 'invalid-description') setError('운동방 설명은 100자 이하로 입력해 주세요.')
+      else if (result?.error) setError(result.error)
+    } catch {
+      setError('운동방을 만들지 못했어요. 잠시 후 다시 시도해 주세요.')
+    } finally {
+      setSubmitting(false)
+    }
   }
 
   return (
@@ -89,7 +100,7 @@ export function CreateRoomPage({ currentUser, onCreateRoom }) {
           })}
         </div>
         {error && <p className="field-error room-form-error" role="alert">{error}</p>}
-        <button className="home-button create-room-button" type="submit">운동방 만들기</button>
+        <button className="home-button create-room-button" disabled={submitting || roomSaving} type="submit">{submitting || roomSaving ? '운동방을 만드는 중…' : '운동방 만들기'}</button>
       </form>
     </section>
   )
