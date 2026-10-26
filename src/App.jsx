@@ -1,5 +1,7 @@
 import { useMemo, useState } from 'react'
 import BottomNav from './components/BottomNav.jsx'
+import AuthPage from './features/auth/AuthPage.jsx'
+import { useAuth } from './features/auth/useAuth.js'
 import {
   CreateRoomPage,
   FriendsPage,
@@ -22,7 +24,11 @@ const pages = {
   settings: SettingsPage,
 }
 
-function App() {
+function AuthLoadingScreen() {
+  return <section className="auth-page auth-page--loading" aria-live="polite"><div className="auth-brand-mark" aria-hidden="true">ㄷ</div><p className="eyebrow">DEUKGEUNI</p><h1>득근이를 준비하고 있어요</h1></section>
+}
+
+function AuthenticatedApp() {
   const [activeScreen, setActiveScreen] = useState('home')
   const [selectedRoomId, setSelectedRoomId] = useState(null)
   const [currentUserId, setCurrentUserId] = useState(initialCurrentUserId)
@@ -92,6 +98,14 @@ function App() {
       <BottomNav activeScreen={activeScreen} onNavigate={navigateTo} />
     </div>
   )
+}
+
+function App() {
+  const auth = useAuth()
+
+  if (auth.loading) return <AuthLoadingScreen />
+  if (!auth.user || auth.profileError || !auth.isConfigured) return <AuthPage auth={auth} />
+  return <AuthenticatedApp />
 }
 
 export default App
