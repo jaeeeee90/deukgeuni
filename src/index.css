@@ -2,8 +2,8 @@
 
 :root {
   font-family: 'DM Sans', 'Gowun Dodum', 'Apple SD Gothic Neo', sans-serif;
-  color: #34313b;
-  background: #fffaf6;
+  color: var(--text-primary);
+  background: var(--bg-app);
   font-synthesis: none;
   text-rendering: optimizeLegibility;
   -webkit-font-smoothing: antialiased;
@@ -11,11 +11,24 @@
   font-optical-sizing: auto;
   font-weight: 400;
 
-  --ink: #34313b;
-  --muted: #89848d;
-  --coral: #f28b70;
-  --cream: #fffaf6;
-  --line: #f0ece8;
+  --bg-app: #090e1b;
+  --bg-surface: #172238;
+  --bg-surface-raised: #1d2a43;
+  --bg-input: #10192b;
+  --brand-primary: #2150d9;
+  --brand-primary-hover: #3264ed;
+  --text-primary: #f5f7ff;
+  --text-secondary: #a9b9d4;
+  --text-muted: #72819d;
+  --border-subtle: #293750;
+  --danger: #f08080;
+
+  /* Legacy names kept so the existing component styles stay compatible. */
+  --ink: var(--text-primary);
+  --muted: var(--text-secondary);
+  --coral: var(--brand-primary);
+  --cream: var(--bg-app);
+  --line: var(--border-subtle);
 }
 
 * {

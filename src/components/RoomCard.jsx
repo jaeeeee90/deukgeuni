@@ -1,4 +1,5 @@
 import { formatMemberSummary } from '../utils/memberSummary.js'
+import RoomIcon from './RoomIcon.jsx'
 
 function RoomCard({ room, onSelect }) {
   const exerciseSummary = room.exercises.length
@@ -12,9 +13,7 @@ function RoomCard({ room, onSelect }) {
       onClick={() => onSelect(room)}
       aria-label={`${room.name}, ${formatMemberSummary(room.members)}`}
     >
-      <span className={`room-card__art room-card__art--${room.color}`} aria-hidden="true">
-        {room.symbol}
-      </span>
+      <RoomIcon className={`room-card__art room-card__art--${room.color}`} color={room.color} symbol={room.symbol} />
       <span className="room-card__content">
         <span className="room-card__title-row">
           <span className="room-card__name">{room.name}</span>

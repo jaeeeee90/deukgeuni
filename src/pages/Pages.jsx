@@ -1,14 +1,16 @@
 import { useState } from 'react'
 import RoomCard from '../components/RoomCard.jsx'
+import RoomIcon from '../components/RoomIcon.jsx'
 import FriendsFeaturePage from '../features/friends/FriendsPage.jsx'
 import { roomIconOptions } from '../features/rooms/roomData.js'
 
-export function HomePage({ onOpenRoom, onRetryRooms, roomError, roomLoading, rooms }) {
+export function HomePage({ displayName, onNavigate, onOpenRoom, onRetryRooms, roomError, roomLoading, rooms }) {
   return (
     <>
       <header className="welcome-header">
         <div className="brand-mark" aria-hidden="true">ㄷ</div>
         <p className="eyebrow">친구와 함께하는 운동 기록</p>
+        <p className="welcome-user" title={displayName}>안녕하세요, <b>{displayName}</b>님</p>
         <h1>득근이<span className="brand-sparkle" aria-hidden="true">✦</span></h1>
         <p className="welcome-message">오늘도 친구들과 함께 득근!</p>
         <div className="welcome-doodle" aria-hidden="true">✿</div>
@@ -23,11 +25,16 @@ export function HomePage({ onOpenRoom, onRetryRooms, roomError, roomLoading, roo
         </div>
         {roomLoading && <p className="room-sync-note" role="status">온라인 운동방을 불러오고 있어요.</p>}
         {roomError && <div className="room-sync-error" role="alert"><span>{roomError}</span><button type="button" onClick={onRetryRooms}>다시 시도</button></div>}
-        <div className="room-list">
+        {rooms.length === 0 && !roomLoading ? <div className="empty-room-state">
+          <span className="empty-workout-icon" aria-hidden="true">🌱</span>
+          <p>아직 운동방이 없어요.</p>
+          <span>방을 만들거나 친구에게 초대받아 함께 운동을 시작해 보세요.</span>
+          <button className="home-button" type="button" onClick={() => onNavigate?.('create')}>방 만들기</button>
+        </div> : <div className="room-list">
           {rooms.map((room) => (
             <RoomCard key={room.id} room={room} onSelect={onOpenRoom} />
           ))}
-        </div>
+        </div>}
       </section>
     </>
   )
@@ -77,7 +84,7 @@ export function CreateRoomPage({ currentUser, onCreateRoom, roomSaving }) {
         <div className="room-icon-picker" role="radiogroup" aria-label="운동방 아이콘 선택">
           {roomIconOptions.map((option) => {
             const value = `${option.symbol}:${option.color}`
-            return <button className={`room-icon-choice room-card__art--${option.color}${selectedIcon === value ? ' is-selected' : ''}`} aria-checked={selectedIcon === value} key={value} onClick={() => setSelectedIcon(value)} role="radio" type="button"><span aria-hidden="true">{option.symbol}</span><small>{option.label}</small></button>
+            return <button aria-checked={selectedIcon === value} aria-label={option.label} className={`room-icon-choice room-card__art--${option.color}${selectedIcon === value ? ' is-selected' : ''}`} key={value} onClick={() => setSelectedIcon(value)} role="radio" type="button"><RoomIcon color={option.color} symbol={option.symbol} /></button>
           })}
         </div>
         {error && <p className="field-error room-form-error" role="alert">{error}</p>}

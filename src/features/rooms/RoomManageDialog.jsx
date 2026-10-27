@@ -1,4 +1,5 @@
 import { useState } from 'react'
+import RoomIcon from '../../components/RoomIcon.jsx'
 import RoomFriendInviteDialog from '../friends/RoomFriendInviteDialog.jsx'
 import InviteLinkPanel from '../invitations/InviteLinkPanel.jsx'
 import { roomIconOptions } from './roomData.js'
@@ -64,7 +65,7 @@ function RoomManageDialog({ authUser, room, onClose, onCreateInvitation, onDelet
           <div className="room-icon-picker" role="radiogroup" aria-label="운동방 아이콘 선택">
             {roomIconOptions.map((option) => {
               const value = `${option.symbol}:${option.color}`
-              return <button className={`room-icon-choice room-card__art--${option.color}${selectedIcon === value ? ' is-selected' : ''}`} aria-checked={selectedIcon === value} disabled={saving} key={value} onClick={() => setSelectedIcon(value)} role="radio" type="button"><span aria-hidden="true">{option.symbol}</span><small>{option.label}</small></button>
+              return <button aria-checked={selectedIcon === value} aria-label={option.label} className={`room-icon-choice room-card__art--${option.color}${selectedIcon === value ? ' is-selected' : ''}`} disabled={saving} key={value} onClick={() => setSelectedIcon(value)} role="radio" type="button"><RoomIcon color={option.color} symbol={option.symbol} /></button>
             })}
           </div>
           {error && <p className="field-error room-form-error" role="alert">{error}</p>}

@@ -279,3 +279,7 @@ export function getExercisesForDate(state, roomId, date) {
 export function getSetsForExercise(state, entryId, userId) {
   return state.sets.filter((set) => set.entryId === entryId && set.userId === userId).sort((first, second) => first.order - second.order)
 }
+
+export function getLatestSetForExercise(state, entryId, userId) {
+  return getSetsForExercise(state, entryId, userId).at(-1) ?? null
+}

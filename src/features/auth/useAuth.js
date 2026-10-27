@@ -4,6 +4,7 @@ import { supabase, supabaseConfig } from '../../lib/supabaseClient.js'
 const initialState = {
   error: null,
   loading: true,
+  profile: null,
   profileError: null,
   session: null,
   user: null,
@@ -22,13 +23,13 @@ function mapAuthError(error) {
 async function verifyProfile(userId) {
   const { data, error } = await supabase
     .from('profiles')
-    .select('id')
+    .select('id,display_name')
     .eq('id', userId)
     .maybeSingle()
 
   if (error) return { error: '프로필을 확인하지 못했어요. Supabase SQL 설정을 확인해 주세요.' }
   if (!data) return { error: '프로필이 자동으로 생성되지 않았어요. profiles SQL 설정을 확인해 주세요.' }
-  return { error: null }
+  return { error: null, profile: data }
 }
 
 export function useAuth() {
@@ -39,8 +40,13 @@ export function useAuth() {
   const applySession = useCallback(async (session) => {
     const user = session?.user ?? null
     let profileError = null
-    if (user && supabase) profileError = (await verifyProfile(user.id)).error
-    setState({ error: null, loading: false, profileError, session, user })
+    let profile = null
+    if (user && supabase) {
+      const profileResult = await verifyProfile(user.id)
+      profileError = profileResult.error
+      profile = profileResult.profile ?? null
+    }
+    setState({ error: null, loading: false, profile, profileError, session, user })
   }, [])
 
   useEffect(() => {
@@ -59,7 +65,7 @@ export function useAuth() {
     const { data: listener } = supabase.auth.onAuthStateChange((event, session) => {
       if (!mounted) return
       if (event === 'SIGNED_OUT') {
-        setState({ error: null, loading: false, profileError: null, session: null, user: null })
+        setState({ error: null, loading: false, profile: null, profileError: null, session: null, user: null })
         return
       }
       setState((current) => ({ ...current, error: null, loading: false, session, user: session?.user ?? null }))
@@ -75,11 +81,12 @@ export function useAuth() {
     if (!supabase) return { error: 'Supabase 환경변수가 설정되지 않았어요.' }
     const { data, error } = await supabase.auth.signInWithPassword({ email, password })
     if (error) return { error: mapAuthError(error) }
-    const profile = await verifyProfile(data.user.id)
-    if (profile.error) {
-      setState((current) => ({ ...current, profileError: profile.error }))
-      return { error: profile.error }
+    const profileResult = await verifyProfile(data.user.id)
+    if (profileResult.error) {
+      setState((current) => ({ ...current, profileError: profileResult.error }))
+      return { error: profileResult.error }
     }
+    setState((current) => ({ ...current, profile: profileResult.profile ?? null, profileError: null }))
     return { error: null }
   }, [])
 
@@ -92,11 +99,12 @@ export function useAuth() {
     })
     if (error) return { error: mapAuthError(error) }
     if (!data.session) return { error: null, needsEmailConfirmation: true }
-    const profile = await verifyProfile(data.user.id)
-    if (profile.error) {
-      setState((current) => ({ ...current, profileError: profile.error }))
-      return { error: profile.error }
+    const profileResult = await verifyProfile(data.user.id)
+    if (profileResult.error) {
+      setState((current) => ({ ...current, profileError: profileResult.error }))
+      return { error: profileResult.error }
     }
+    setState((current) => ({ ...current, profile: profileResult.profile ?? null, profileError: null }))
     return { error: null, needsEmailConfirmation: false }
   }, [])
 

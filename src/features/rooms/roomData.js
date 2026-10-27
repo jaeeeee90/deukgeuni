@@ -1,12 +1,12 @@
 const ROOM_STORAGE_VERSION = 1
 
 export const roomIconOptions = [
-  { symbol: '💪', color: 'peach', label: '근력 운동' },
-  { symbol: '🏋️', color: 'lavender', label: '웨이트 운동' },
-  { symbol: '🏃', color: 'mint', label: '달리기' },
-  { symbol: '🚴', color: 'peach', label: '사이클' },
-  { symbol: '🧘', color: 'lavender', label: '요가' },
-  { symbol: '🥊', color: 'mint', label: '복싱' },
+  { symbol: '💪', color: 'peach', label: '벤치프레스하는 강아지', assetName: 'bench-press-dog.png' },
+  { symbol: '🏋️', color: 'lavender', label: '랫풀다운하는 강아지', assetName: 'lat-pulldown-dog.png' },
+  { symbol: '🏃', color: 'mint', label: '러닝머신에서 달리는 강아지', assetName: 'treadmill-dog.png' },
+  { symbol: '🚴', color: 'peach', label: '아령을 드는 강아지', assetName: 'dumbbell-dog.png' },
+  { symbol: '🧘', color: 'lavender', label: '스쿼트하는 강아지', assetName: 'squat-dog.png' },
+  { symbol: '🥊', color: 'mint', label: '체조하는 강아지', assetName: 'gymnastics-dog.png' },
 ]
 
 const validIcons = new Set(roomIconOptions.map(({ symbol, color }) => `${symbol}:${color}`))

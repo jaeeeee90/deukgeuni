@@ -1,9 +1,9 @@
 const menuItems = [
-  { id: 'home', label: '운동방', icon: '🏋️' },
+  { id: 'home', label: '운동방', icon: '⌂' },
   { id: 'friends', label: '친구목록', icon: '♧' },
   { id: 'create', label: '방 만들기', icon: '+' },
-  { id: 'stats', label: '통계', icon: '▥' },
-  { id: 'settings', label: '설정', icon: '⚙' },
+  { id: 'stats', label: '통계', icon: '▤' },
+  { id: 'settings', label: '설정', icon: '⚙︎' },
 ]
 
 function BottomNav({ activeScreen, onNavigate }) {

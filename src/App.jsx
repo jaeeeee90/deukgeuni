@@ -1,6 +1,7 @@
 import { useCallback, useMemo, useState } from 'react'
 import BottomNav from './components/BottomNav.jsx'
 import AuthPage from './features/auth/AuthPage.jsx'
+import { getDisplayName } from './features/auth/authData.js'
 import { useAuth } from './features/auth/useAuth.js'
 import InvitePage from './features/invitations/InvitePage.jsx'
 import {
@@ -17,7 +18,7 @@ import {
   SettingsPage,
   StatisticsPage,
 } from './pages/Pages.jsx'
-import { currentUserId as initialCurrentUserId, rooms as exampleRooms } from './data/rooms.js'
+import { currentUserId as initialCurrentUserId } from './data/rooms.js'
 import { useRoomStore } from './features/rooms/useRoomStore.js'
 import { useRemoteRoomStore } from './features/rooms/useRemoteRoomStore.js'
 import WorkoutRoomPage from './features/workouts/WorkoutRoomPage.jsx'
@@ -50,7 +51,7 @@ function getInitialPendingInviteToken() {
   return token ?? ''
 }
 
-function AuthenticatedApp({ authUser, onClearInvite, pendingInviteToken }) {
+function AuthenticatedApp({ authProfile, authUser, onClearInvite, pendingInviteToken }) {
   const [activeScreen, setActiveScreen] = useState('home')
   const [selectedRoomId, setSelectedRoomId] = useState(null)
   const [currentUserId, setCurrentUserId] = useState(initialCurrentUserId)
@@ -60,7 +61,6 @@ function AuthenticatedApp({ authUser, onClearInvite, pendingInviteToken }) {
   const allRooms = useMemo(() => [
     ...remoteRoomStore.rooms,
     ...roomState.rooms.map((room) => ({ ...room, source: 'local' })),
-    ...exampleRooms.map((room) => ({ ...room, source: 'fixture' })),
   ], [remoteRoomStore.rooms, roomState.rooms])
   const selectedRoom = allRooms.find((room) => room.id === selectedRoomId) ?? null
   const remoteWorkoutStore = useRemoteWorkoutStore(
@@ -155,6 +155,7 @@ function AuthenticatedApp({ authUser, onClearInvite, pendingInviteToken }) {
         {selectedRoom ? (
           <WorkoutRoomPage
             authUser={authUser}
+            displayName={getDisplayName(authProfile, authUser)}
             actions={activeWorkoutActions}
             currentUserId={currentUserId}
             onBack={() => setSelectedRoomId(null)}
@@ -171,11 +172,13 @@ function AuthenticatedApp({ authUser, onClearInvite, pendingInviteToken }) {
           <Page
             authUser={authUser}
             currentUser={currentUser}
+            displayName={getDisplayName(authProfile, authUser)}
             onCreateRoom={createRoom}
             onOpenRoom={openRoom}
             roomError={remoteRoomStore.error}
             roomLoading={remoteRoomStore.loading}
             onRetryRooms={remoteRoomStore.actions.loadRooms}
+            onNavigate={navigateTo}
             rooms={allRooms}
             roomSaving={remoteRoomStore.saving}
             onRoomInvitationAccepted={refreshRoomsAfterInvitation}
@@ -200,7 +203,7 @@ function App() {
   if (!auth.user || auth.profileError || !auth.isConfigured) {
     return <AuthPage auth={auth} invitePending={pendingInviteToken !== null} />
   }
-  return <AuthenticatedApp authUser={auth.user} onClearInvite={clearInvite} pendingInviteToken={pendingInviteToken} />
+  return <AuthenticatedApp authProfile={auth.profile} authUser={auth.user} onClearInvite={clearInvite} pendingInviteToken={pendingInviteToken} />
 }
 
 export default App

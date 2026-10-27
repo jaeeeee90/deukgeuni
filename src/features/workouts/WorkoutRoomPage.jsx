@@ -1,5 +1,7 @@
 import { useMemo, useRef, useState } from 'react'
 import { formatMemberSummary } from '../../utils/memberSummary.js'
+import ExerciseIcon from '../../components/ExerciseIcon.jsx'
+import RoomIcon from '../../components/RoomIcon.jsx'
 import RoomFriendInviteDialog from '../friends/RoomFriendInviteDialog.jsx'
 import RoomManageDialog from '../rooms/RoomManageDialog.jsx'
 import { exerciseCategories, exercises } from './exerciseCatalog.js'
@@ -45,20 +47,20 @@ function draftFromSet(set) {
   return { weight: String(set.weight), reps: String(set.reps) }
 }
 
-function MethodFields({ method, draft, onChange, prefix = '' }) {
+function MethodFields({ method, draft, onChange, prefix = '', showPlaceholders = true }) {
   const label = (name) => `${prefix}${name}`
-  if (method === 'reps') return <label className="workout-set-input"><span>횟수</span><input aria-label={label('반복 횟수')} inputMode="numeric" min="1" placeholder="10" step="1" type="number" value={draft.reps} onChange={(event) => onChange('reps', event.target.value)} /><span>회</span></label>
+  if (method === 'reps') return <label className="workout-set-input"><span>횟수</span><input aria-label={label('반복 횟수')} inputMode="numeric" min="1" placeholder={showPlaceholders ? '10' : ''} step="1" type="number" value={draft.reps} onChange={(event) => onChange('reps', event.target.value)} /><span>회</span></label>
   if (method === 'duration') return <>
-    <label className="workout-set-input"><span>시간</span><input aria-label={label('운동 시간')} inputMode="decimal" min="0" placeholder="20" step="any" type="number" value={draft.duration} onChange={(event) => onChange('duration', event.target.value)} /></label>
+    <label className="workout-set-input"><span>시간</span><input aria-label={label('운동 시간')} inputMode="decimal" min="0" placeholder={showPlaceholders ? '20' : ''} step="any" type="number" value={draft.duration} onChange={(event) => onChange('duration', event.target.value)} /></label>
     <label className="workout-unit-select"><span className="visually-hidden">시간 단위</span><select aria-label={label('시간 단위')} value={draft.durationUnit} onChange={(event) => onChange('durationUnit', event.target.value)}><option value="minutes">분</option><option value="seconds">초</option></select></label>
   </>
   if (method === 'duration-distance') return <>
-    <label className="workout-set-input"><span>시간</span><input aria-label={label('운동 시간(분)')} inputMode="decimal" min="0" placeholder="30" step="any" type="number" value={draft.durationMinutes} onChange={(event) => onChange('durationMinutes', event.target.value)} /><span>분</span></label>
-    <label className="workout-set-input"><span>거리</span><input aria-label={label('운동 거리(km)')} inputMode="decimal" min="0" placeholder="5" step="any" type="number" value={draft.distanceKm} onChange={(event) => onChange('distanceKm', event.target.value)} /><span>km</span></label>
+    <label className="workout-set-input"><span>시간</span><input aria-label={label('운동 시간(분)')} inputMode="decimal" min="0" placeholder={showPlaceholders ? '30' : ''} step="any" type="number" value={draft.durationMinutes} onChange={(event) => onChange('durationMinutes', event.target.value)} /><span>분</span></label>
+    <label className="workout-set-input"><span>거리</span><input aria-label={label('운동 거리(km)')} inputMode="decimal" min="0" placeholder={showPlaceholders ? '5' : ''} step="any" type="number" value={draft.distanceKm} onChange={(event) => onChange('distanceKm', event.target.value)} /><span>km</span></label>
   </>
   return <>
-    <label className="workout-set-input"><span>중량</span><input aria-label={label('중량(kg)')} inputMode="decimal" min="0" placeholder="0" step="any" type="number" value={draft.weight} onChange={(event) => onChange('weight', event.target.value)} /><span>kg</span></label>
-    <label className="workout-set-input"><span>횟수</span><input aria-label={label('반복 횟수')} inputMode="numeric" min="1" placeholder="10" step="1" type="number" value={draft.reps} onChange={(event) => onChange('reps', event.target.value)} /><span>회</span></label>
+    <label className="workout-set-input"><span>중량</span><input aria-label={label('중량(kg)')} inputMode="decimal" min="0" placeholder={showPlaceholders ? '0' : ''} step="any" type="number" value={draft.weight} onChange={(event) => onChange('weight', event.target.value)} /><span>kg</span></label>
+    <label className="workout-set-input"><span>횟수</span><input aria-label={label('반복 횟수')} inputMode="numeric" min="1" placeholder={showPlaceholders ? '10' : ''} step="1" type="number" value={draft.reps} onChange={(event) => onChange('reps', event.target.value)} /><span>회</span></label>
   </>
 }
 
@@ -105,8 +107,11 @@ function SetRow({ set, canEdit, onUpdate, onRemove, disabled }) {
   </div>
 }
 
-function SetEntryForm({ entryId, userId, currentUserId, recordingMethod, onAdd, disabled }) {
-  const [draft, setDraft] = useState(() => emptyDraft(recordingMethod))
+function SetEntryForm({ entryId, userId, currentUserId, recordingMethod, onAdd, disabled, sets }) {
+  const [draft, setDraft] = useState(() => {
+    const latestSet = sets.at(-1)
+    return latestSet ? draftFromSet(latestSet) : emptyDraft(recordingMethod)
+  })
   const [error, setError] = useState('')
   const [saving, setSaving] = useState(false)
   const updateDraft = (key, value) => setDraft((current) => ({ ...current, [key]: value }))
@@ -116,14 +121,15 @@ function SetEntryForm({ entryId, userId, currentUserId, recordingMethod, onAdd, 
     try {
       const result = await onAdd(entryId, userId, currentUserId, draft, recordingMethod)
       if (result?.error) return setError(errorCopy(result.error))
-      setDraft(emptyDraft(recordingMethod))
+      const latestSet = sets.at(-1)
+      setDraft(latestSet ? draftFromSet(latestSet) : emptyDraft(recordingMethod))
       setError('')
     } finally {
       setSaving(false)
     }
   }
   return <form className={`workout-set-form workout-set-form--${recordingMethod}`} noValidate onSubmit={submit}>
-    <MethodFields draft={draft} method={recordingMethod} onChange={updateDraft} />
+    <MethodFields draft={draft} method={recordingMethod} onChange={updateDraft} showPlaceholders={false} />
     <button className="add-set-button" disabled={disabled || saving} type="submit">{saving ? '저장 중…' : '세트 추가'}</button>
     {error && <span className="field-error" role="alert">{error}</span>}
   </form>
@@ -134,7 +140,7 @@ function MemberRecord({ member, entryId, sets, currentUserId, actions, recording
   return <section className={`member-record${isCurrentUser ? ' member-record--mine' : ''}`} aria-label={`${member.name} 세트 기록`}>
     <div className="member-record__heading"><span className="member-avatar" aria-hidden="true">{member.name.slice(0, 1)}</span><h4>{member.name}</h4>{isCurrentUser && <span className="my-record-badge">나</span>}</div>
     {sets.length ? <div className="workout-set-list">{sets.map((set) => <SetRow canEdit={isCurrentUser} disabled={disabled} key={set.id} onRemove={(setId) => actions.removeSet(setId, currentUserId)} onUpdate={(setId, input) => actions.updateSet(setId, currentUserId, input)} set={set} />)}</div> : <p className="no-member-sets">아직 기록 없음</p>}
-    {isCurrentUser && <SetEntryForm currentUserId={currentUserId} disabled={disabled} entryId={entryId} onAdd={actions.addSet} recordingMethod={recordingMethod} userId={member.id} />}
+    {isCurrentUser && <SetEntryForm currentUserId={currentUserId} disabled={disabled} entryId={entryId} key={`${entryId}-${sets.at(-1)?.id ?? 'empty'}`} onAdd={actions.addSet} recordingMethod={recordingMethod} sets={sets} userId={member.id} />}
   </section>
 }
 
@@ -168,7 +174,7 @@ function ExercisePicker({ category, onCategoryChange, onChoose, onClose, notice,
   const [query, setQuery] = useState('')
   const [registering, setRegistering] = useState(false)
   const selection = getExercisesForPicker({ exercises, customExercises: state.customExercises, roomId, category, query, state, currentUserId })
-  const choice = (exercise) => <button className="exercise-choice" disabled={disabled} key={exercise.id} type="button" onClick={() => onChoose(exercise)}><span><b>{exercise.name}</b><small>{exercise.categories.join(' · ')}</small></span><span aria-hidden="true">＋</span></button>
+  const choice = (exercise) => <button className="exercise-choice" disabled={disabled} key={exercise.id} type="button" onClick={() => onChoose(exercise)}><ExerciseIcon exercise={exercise} /><span className="exercise-choice__details"><b>{exercise.name}</b><small>{exercise.categories.join(' · ')}</small></span><span className="exercise-choice__add" aria-hidden="true">＋</span></button>
   return <div className="workout-modal-backdrop" onMouseDown={(event) => event.target === event.currentTarget && onClose()} onTouchStart={(event) => event.stopPropagation()} onTouchEnd={(event) => event.stopPropagation()}>
     <section className="workout-picker" role="dialog" aria-modal="true" aria-labelledby="exercise-picker-title">
       <div className="workout-picker__handle" aria-hidden="true" />
@@ -213,10 +219,10 @@ function AttendanceControl({ roomId, date, currentUserId, state, actions, disabl
 
 function ExerciseEntryCard({ entry, exercise, room, members, currentUserId, state, actions, onDelete, disabled }) {
   if (!exercise) return null
-  return <article className="exercise-entry-card"><div className="exercise-entry-heading"><div className="exercise-entry-title"><span className="exercise-entry-icon" aria-hidden="true">🏋️</span><div><p className="exercise-entry-category">{exercise.categories.join(' · ')}</p><h3>{exercise.name}</h3></div></div><button className="exercise-delete-button" disabled={disabled} type="button" onClick={() => onDelete(entry.id)}>삭제</button></div><div className="member-record-list">{members.map((member) => <MemberRecord actions={actions} currentUserId={currentUserId} disabled={disabled} entryId={entry.id} key={member.id} member={member} recordingMethod={exercise.recordingMethod} sets={getSetsForExercise(state, entry.id, member.id)} />)}</div><span className="visually-hidden">{room.name}</span></article>
+  return <article className="exercise-entry-card"><div className="exercise-entry-heading"><div className="exercise-entry-title"><ExerciseIcon exercise={exercise} /><div><p className="exercise-entry-category">{exercise.categories.join(' · ')}</p><h3>{exercise.name}</h3></div></div><button className="exercise-delete-button" disabled={disabled} type="button" onClick={() => onDelete(entry.id)}>삭제</button></div><div className="member-record-list">{members.map((member) => <MemberRecord actions={actions} currentUserId={currentUserId} disabled={disabled} entryId={entry.id} key={member.id} member={member} recordingMethod={exercise.recordingMethod} sets={getSetsForExercise(state, entry.id, member.id)} />)}</div><span className="visually-hidden">{room.name}</span></article>
 }
 
-function WorkoutRoomPage({ authUser, room, onBack, onCreateInvitation, onDeleteRoom, onUpdateRoom, state, currentUserId, onUserChange, actions, storageError, workoutBusy }) {
+function WorkoutRoomPage({ authUser, displayName, room, onBack, onCreateInvitation, onDeleteRoom, onUpdateRoom, state, currentUserId, onUserChange, actions, storageError, workoutBusy }) {
   const [date, setDate] = useState(() => getLocalDateKey())
   const [pickerOpen, setPickerOpen] = useState(false)
   const [category, setCategory] = useState(exerciseCategories[0])
@@ -248,7 +254,7 @@ function WorkoutRoomPage({ authUser, room, onBack, onCreateInvitation, onDeleteR
     && room.members.some((member) => member.id === authUser.id && member.status === 'active')
 
   return <section className="workout-room-page" onTouchStart={handleTouchStart} onTouchEnd={handleTouchEnd}>
-    <header className="workout-room-header"><button className="back-button workout-room-back" type="button" onClick={onBack}><span aria-hidden="true">←</span> 운동방 목록</button><div className="workout-room-heading"><div><p className="section-kicker">WORKOUT ROOM</p><h1>{room.name}</h1><p className="workout-room-members">👥 {formatMemberSummary(room.members)}</p>{room.description && <p className="workout-room-description">{room.description}</p>}</div><span className={`workout-room-mark room-card__art--${room.color}`} aria-hidden="true">{room.symbol}</span></div>{canManageRoom && <button className="room-manage-button" type="button" onClick={() => setManagingRoom(true)}><span aria-hidden="true">⚙</span> 방 관리</button>}{canInviteFriends && !canManageRoom && <button className="room-manage-button" type="button" onClick={() => setFriendInviteOpen(true)}><span aria-hidden="true">＋</span> 친구 초대</button>}<label className="dev-user-picker"><span>기록 확인 사용자</span><select aria-label="개발용 현재 사용자" value={currentUserId} onChange={(event) => onUserChange(event.target.value)}>{sortedMembers.map((member) => <option key={member.id} value={member.id}>{member.name}</option>)}</select></label><p className="demo-storage-note">{room.source === 'remote' ? '이 방의 운동 기록은 Supabase에 저장되며 다른 기기와 공유됩니다.' : '테스트용 임시 기록은 이 브라우저에 저장됩니다.'}</p>{storageError && <p className="storage-protection-notice" role="alert">{room.source === 'remote' ? storageError : '기존 운동 기록을 해석하지 못해 데이터를 보호하고 있습니다. 브라우저 저장 데이터는 변경하지 않았습니다.'}</p>}</header>
+    <header className="workout-room-header"><div className="workout-room-topbar"><button className="back-button workout-room-back" type="button" onClick={onBack}><span aria-hidden="true">←</span> 운동방 목록</button><span className="workout-room-user-name" title={displayName}>{displayName}</span></div><div className="workout-room-heading"><div><p className="section-kicker">WORKOUT ROOM</p><h1>{room.name}</h1><p className="workout-room-members">👥 {formatMemberSummary(room.members)}</p>{room.description && <p className="workout-room-description">{room.description}</p>}</div><RoomIcon className={`workout-room-mark room-card__art--${room.color}`} color={room.color} symbol={room.symbol} /></div>{canManageRoom && <button className="room-manage-button" type="button" onClick={() => setManagingRoom(true)}><span aria-hidden="true">⚙</span> 방 관리</button>}{canInviteFriends && !canManageRoom && <button className="room-manage-button" type="button" onClick={() => setFriendInviteOpen(true)}><span aria-hidden="true">＋</span> 친구 초대</button>}<label className="dev-user-picker"><span>기록 확인 사용자</span><select aria-label="개발용 현재 사용자" value={currentUserId} onChange={(event) => onUserChange(event.target.value)}>{sortedMembers.map((member) => <option key={member.id} value={member.id}>{member.name}</option>)}</select></label><p className="demo-storage-note">{room.source === 'remote' ? '이 방의 운동 기록은 Supabase에 저장되며 다른 기기와 공유됩니다.' : '테스트용 임시 기록은 이 브라우저에 저장됩니다.'}</p>{storageError && <p className="storage-protection-notice" role="alert">{room.source === 'remote' ? storageError : '기존 운동 기록을 해석하지 못해 데이터를 보호하고 있습니다. 브라우저 저장 데이터는 변경하지 않았습니다.'}</p>}</header>
     <div className="workout-date-picker"><button className="date-arrow" type="button" aria-label="이전 날짜" onClick={() => changeDate(-1)}>‹</button><div className="workout-date-label"><span className="workout-date-icon" aria-hidden="true">▦</span><span>{formatDate(date)}</span>{date === today && <span className="today-badge">오늘</span>}</div><button className="date-arrow" type="button" aria-label="다음 날짜" onClick={() => changeDate(1)}>›</button></div>
     <p className="swipe-hint">화면을 좌우로 밀어 날짜를 바꿀 수 있어요.</p>
     <AttendanceControl actions={actions} currentUserId={currentUserId} date={date} disabled={disabled} roomId={room.id} state={state} />
