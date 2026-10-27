@@ -1,4 +1,4 @@
-import { useMemo, useState } from 'react'
+import { lazy, Suspense, useMemo, useState } from 'react'
 import BottomNav from './components/BottomNav.jsx'
 import AuthPage from './features/auth/AuthPage.jsx'
 import { useAuth } from './features/auth/useAuth.js'
@@ -15,7 +15,12 @@ import { useRoomStore } from './features/rooms/useRoomStore.js'
 import { useRemoteRoomStore } from './features/rooms/useRemoteRoomStore.js'
 import WorkoutRoomPage from './features/workouts/WorkoutRoomPage.jsx'
 import { useWorkoutStore } from './features/workouts/useWorkoutStore.js'
+import { useRemoteWorkoutStore } from './features/workouts/useRemoteWorkoutStore.js'
 import './App.css'
+
+const DevRlsTestPanel = import.meta.env.DEV
+  ? lazy(() => import('./features/dev/RlsTestPanel.jsx'))
+  : null
 
 const pages = {
   home: HomePage,
@@ -42,6 +47,14 @@ function AuthenticatedApp({ authUser }) {
     ...exampleRooms.map((room) => ({ ...room, source: 'fixture' })),
   ], [remoteRoomStore.rooms, roomState.rooms])
   const selectedRoom = allRooms.find((room) => room.id === selectedRoomId) ?? null
+  const remoteWorkoutStore = useRemoteWorkoutStore(
+    selectedRoom?.source === 'remote' ? selectedRoom.id : null,
+    authUser.id,
+  )
+  const activeWorkoutState = selectedRoom?.source === 'remote' ? remoteWorkoutStore.state : workoutState
+  const activeWorkoutActions = selectedRoom?.source === 'remote' ? remoteWorkoutStore.actions : workoutActions
+  const activeWorkoutError = selectedRoom?.source === 'remote' ? remoteWorkoutStore.error : storageError
+  const activeWorkoutBusy = selectedRoom?.source === 'remote' && (remoteWorkoutStore.loading || remoteWorkoutStore.saving)
   const currentUser = allRooms
     .flatMap((room) => room.members)
     .find((member) => member.id === currentUserId)
@@ -98,15 +111,16 @@ function AuthenticatedApp({ authUser }) {
       <main className="main-content">
         {selectedRoom ? (
           <WorkoutRoomPage
-            actions={workoutActions}
+            actions={activeWorkoutActions}
             currentUserId={currentUserId}
             onBack={() => setSelectedRoomId(null)}
             onDeleteRoom={deleteRoom}
             onUpdateRoom={updateRoom}
             onUserChange={setCurrentUserId}
             room={selectedRoom}
-            state={workoutState}
-            storageError={storageError}
+            state={activeWorkoutState}
+            storageError={activeWorkoutError}
+            workoutBusy={activeWorkoutBusy}
           />
         ) : (
           <Page
@@ -122,6 +136,7 @@ function AuthenticatedApp({ authUser }) {
         )}
       </main>
       <BottomNav activeScreen={activeScreen} onNavigate={navigateTo} />
+      {DevRlsTestPanel && <Suspense fallback={null}><DevRlsTestPanel /></Suspense>}
     </div>
   )
 }
