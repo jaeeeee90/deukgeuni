@@ -1,5 +1,6 @@
 import { useCallback, useEffect, useRef, useState } from 'react'
 import { supabase } from '../../lib/supabaseClient.js'
+import { getFirstRpcRow } from '../invitations/invitationData.js'
 import { normalizeRemoteRooms } from './remoteRoomData.js'
 
 const roomSelect = 'id,name,description,symbol,color,creator_id,created_at,updated_at,deleted_at,room_members(user_id,display_name,role,status)'
@@ -10,6 +11,7 @@ function mapRoomError(error) {
   if (message.includes('invalid_room_description')) return '운동방 설명은 100자 이하로 입력해 주세요.'
   if (message.includes('invalid_room_icon')) return '운동방 아이콘을 다시 선택해 주세요.'
   if (message.includes('missing_profile')) return '프로필을 찾지 못했어요. 다시 로그인해 주세요.'
+  if (message.includes('invitation_creation_not_allowed')) return '운동방장만 초대 링크를 만들 수 있어요.'
   if (message.includes('not_authenticated') || error?.code === '42501') return '로그인 상태를 확인한 뒤 다시 시도해 주세요.'
   if (error?.code === '23514') return '운동방 정보를 확인해 주세요.'
   return '운동방 정보를 불러오거나 저장하지 못했어요. 잠시 후 다시 시도해 주세요.'
@@ -153,8 +155,21 @@ export function useRemoteRoomStore(user) {
     return { data, error }
   }), [runMutation])
 
+  const createInvitation = useCallback(async (roomId) => {
+    if (!supabase || !userId) return { data: null, error: '로그인 상태를 확인한 뒤 다시 시도해 주세요.' }
+    try {
+      const { data, error } = await supabase.rpc('create_room_invitation', { p_room_id: roomId })
+      if (error) return { data: null, error: mapRoomError(error) }
+      const invitation = getFirstRpcRow(data)
+      if (!invitation?.token) return { data: null, error: '초대 링크를 만들지 못했어요. 다시 시도해 주세요.' }
+      return { data: invitation, error: null }
+    } catch (error) {
+      return { data: null, error: mapRoomError(error) }
+    }
+  }, [userId])
+
   return {
-    actions: { createRoom, deleteRoom, loadRooms, updateRoom },
+    actions: { createInvitation, createRoom, deleteRoom, loadRooms, updateRoom },
     error: state.error,
     loading: state.loading,
     rooms: state.rooms,

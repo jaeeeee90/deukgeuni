@@ -215,7 +215,7 @@ function ExerciseEntryCard({ entry, exercise, room, members, currentUserId, stat
   return <article className="exercise-entry-card"><div className="exercise-entry-heading"><div className="exercise-entry-title"><span className="exercise-entry-icon" aria-hidden="true">🏋️</span><div><p className="exercise-entry-category">{exercise.categories.join(' · ')}</p><h3>{exercise.name}</h3></div></div><button className="exercise-delete-button" disabled={disabled} type="button" onClick={() => onDelete(entry.id)}>삭제</button></div><div className="member-record-list">{members.map((member) => <MemberRecord actions={actions} currentUserId={currentUserId} disabled={disabled} entryId={entry.id} key={member.id} member={member} recordingMethod={exercise.recordingMethod} sets={getSetsForExercise(state, entry.id, member.id)} />)}</div><span className="visually-hidden">{room.name}</span></article>
 }
 
-function WorkoutRoomPage({ room, onBack, onDeleteRoom, onUpdateRoom, state, currentUserId, onUserChange, actions, storageError, workoutBusy }) {
+function WorkoutRoomPage({ room, onBack, onCreateInvitation, onDeleteRoom, onUpdateRoom, state, currentUserId, onUserChange, actions, storageError, workoutBusy }) {
   const [date, setDate] = useState(() => getLocalDateKey())
   const [pickerOpen, setPickerOpen] = useState(false)
   const [category, setCategory] = useState(exerciseCategories[0])
@@ -252,7 +252,7 @@ function WorkoutRoomPage({ room, onBack, onDeleteRoom, onUpdateRoom, state, curr
     {currentEntries.length === 0 ? <div className="empty-workout-state"><span className="empty-workout-icon" aria-hidden="true">🌱</span><p>이 날짜에는 아직 운동 종목이 없어요.</p><span>운동 종목을 추가해 기록을 시작해 보세요.</span></div> : <div className="exercise-entry-list">{currentEntries.map((entry) => <ExerciseEntryCard actions={actions} currentUserId={currentUserId} disabled={disabled} entry={entry} exercise={exercisesById.get(entry.exerciseId)} key={entry.id} members={sortedMembers} onDelete={setDeleteEntryId} room={room} state={state} />)}</div>}
     {pickerOpen && <ExercisePicker actions={actions} category={category} currentUserId={currentUserId} disabled={disabled} notice={pickerNotice} onCategoryChange={setCategory} onChoose={chooseExercise} onClose={() => setPickerOpen(false)} roomId={room.id} state={state} />}
     {deleteEntryId && deleteExercise && <DeleteExerciseDialog disabled={disabled} exerciseName={deleteExercise.name} onCancel={() => setDeleteEntryId(null)} onConfirm={async () => { const result = await actions.removeExercise(deleteEntryId); if (result?.error) { setNotice(result.error); return } setDeleteEntryId(null); setNotice(`${deleteExercise.name}과 연결된 모든 세트 기록을 삭제했어요.`) }} />}
-    {managingRoom && <RoomManageDialog room={room} onClose={() => setManagingRoom(false)} onDelete={onDeleteRoom} onSave={async (input) => { const result = await onUpdateRoom(input); if (!result?.error) setManagingRoom(false); return result }} />}
+    {managingRoom && <RoomManageDialog room={room} onClose={() => setManagingRoom(false)} onCreateInvitation={onCreateInvitation} onDelete={onDeleteRoom} onSave={async (input) => { const result = await onUpdateRoom(input); if (!result?.error) setManagingRoom(false); return result }} />}
   </section>
 }
 

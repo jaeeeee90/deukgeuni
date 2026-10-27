@@ -1,7 +1,14 @@
-import { lazy, Suspense, useMemo, useState } from 'react'
+import { lazy, Suspense, useCallback, useMemo, useState } from 'react'
 import BottomNav from './components/BottomNav.jsx'
 import AuthPage from './features/auth/AuthPage.jsx'
 import { useAuth } from './features/auth/useAuth.js'
+import InvitePage from './features/invitations/InvitePage.jsx'
+import {
+  clearPendingInviteToken,
+  getInviteTokenFromLocation,
+  getPendingInviteToken,
+  savePendingInviteToken,
+} from './features/invitations/invitationData.js'
 import {
   CreateRoomPage,
   FriendsPage,
@@ -34,7 +41,20 @@ function AuthLoadingScreen() {
   return <section className="auth-page auth-page--loading" aria-live="polite"><div className="auth-brand-mark" aria-hidden="true">ㄷ</div><p className="eyebrow">DEUKGEUNI</p><h1>득근이를 준비하고 있어요</h1></section>
 }
 
-function AuthenticatedApp({ authUser }) {
+function getInitialPendingInviteToken() {
+  if (typeof window === 'undefined') return null
+  const token = getInviteTokenFromLocation(window.location)
+  const hasInviteToken = window.location.pathname === '/invite'
+    && new URLSearchParams(window.location.search).has('token')
+  if (!hasInviteToken) return getPendingInviteToken(window.sessionStorage)
+
+  if (token) savePendingInviteToken(window.sessionStorage, token)
+  else clearPendingInviteToken(window.sessionStorage)
+  window.history.replaceState({}, document.title, '/invite')
+  return token ?? ''
+}
+
+function AuthenticatedApp({ authUser, onClearInvite, pendingInviteToken }) {
   const [activeScreen, setActiveScreen] = useState('home')
   const [selectedRoomId, setSelectedRoomId] = useState(null)
   const [currentUserId, setCurrentUserId] = useState(initialCurrentUserId)
@@ -104,6 +124,28 @@ function AuthenticatedApp({ authUser }) {
     return result
   }
 
+  const completeInvitation = async (roomId) => {
+    const refreshed = await remoteRoomStore.actions.loadRooms({ force: true })
+    if (refreshed.error) return { error: refreshed.error }
+    const joinedRoom = refreshed.rooms.find((room) => room.id === roomId)
+    if (!joinedRoom) return { error: '참여한 운동방을 목록에서 확인하지 못했어요. 다시 시도해 주세요.' }
+    onClearInvite()
+    setCurrentUserId(authUser.id)
+    setActiveScreen('home')
+    setSelectedRoomId(joinedRoom.id)
+    return { error: null }
+  }
+
+  const exitInvitation = () => {
+    onClearInvite()
+    setSelectedRoomId(null)
+    setActiveScreen('home')
+  }
+
+  if (pendingInviteToken !== null) {
+    return <InvitePage onAccepted={completeInvitation} onExit={exitInvitation} token={pendingInviteToken} />
+  }
+
   const Page = pages[activeScreen]
 
   return (
@@ -114,6 +156,7 @@ function AuthenticatedApp({ authUser }) {
             actions={activeWorkoutActions}
             currentUserId={currentUserId}
             onBack={() => setSelectedRoomId(null)}
+            onCreateInvitation={selectedRoom?.source === 'remote' ? remoteRoomStore.actions.createInvitation : null}
             onDeleteRoom={deleteRoom}
             onUpdateRoom={updateRoom}
             onUserChange={setCurrentUserId}
@@ -143,10 +186,18 @@ function AuthenticatedApp({ authUser }) {
 
 function App() {
   const auth = useAuth()
+  const [pendingInviteToken, setPendingInviteToken] = useState(getInitialPendingInviteToken)
+
+  const clearInvite = useCallback(() => {
+    if (typeof window !== 'undefined') clearPendingInviteToken(window.sessionStorage)
+    setPendingInviteToken(null)
+  }, [])
 
   if (auth.loading) return <AuthLoadingScreen />
-  if (!auth.user || auth.profileError || !auth.isConfigured) return <AuthPage auth={auth} />
-  return <AuthenticatedApp authUser={auth.user} />
+  if (!auth.user || auth.profileError || !auth.isConfigured) {
+    return <AuthPage auth={auth} invitePending={pendingInviteToken !== null} />
+  }
+  return <AuthenticatedApp authUser={auth.user} onClearInvite={clearInvite} pendingInviteToken={pendingInviteToken} />
 }
 
 export default App

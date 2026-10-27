@@ -1542,6 +1542,75 @@
   margin-right: 3px;
 }
 
+.invite-link-panel {
+  margin-top: 18px;
+  padding: 14px;
+  border: 1px solid #f1e3dc;
+  border-radius: 15px;
+  background: #fff;
+}
+
+.invite-link-panel__heading {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.invite-link-panel__heading h4 {
+  margin: 2px 0 0;
+  color: var(--ink);
+  font-family: 'Gowun Dodum', sans-serif;
+  font-size: 16px;
+}
+
+.invite-link-panel__heading > span {
+  color: #e69a7d;
+  font-size: 20px;
+}
+
+.invite-link-panel > p:not(.field-error):not(.invite-link-status) {
+  margin: 8px 0 0;
+  color: #91878a;
+  font-size: 10px;
+  line-height: 1.6;
+}
+
+.invite-create-button {
+  width: 100%;
+  margin-top: 13px;
+}
+
+.invite-link-value {
+  overflow: hidden;
+  margin-top: 12px;
+  padding: 10px;
+  border: 1px solid #eee6e1;
+  border-radius: 10px;
+  color: #6e6469;
+  background: #fffaf8;
+  font-size: 10px;
+  line-height: 1.5;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  user-select: all;
+}
+
+.invite-copy-button {
+  width: 100%;
+  margin-top: 10px;
+}
+
+.invite-link-expiry,
+.invite-link-status {
+  display: block;
+  margin-top: 8px;
+  color: #9b8175;
+  font-size: 10px;
+  line-height: 1.5;
+}
+
+.invite-link-status { color: #6e9478; }
+
 .room-manage-dialog {
   width: min(calc(100% - 28px), 500px);
   max-height: min(88svh, 720px);
@@ -1754,6 +1823,75 @@ button:disabled { opacity: 0.52; cursor: not-allowed; }
 }
 
 .auth-page--loading { justify-content: center; }
+
+.invite-page {
+  display: flex;
+  width: min(100%, 560px);
+  min-height: 100svh;
+  margin: 0 auto;
+  padding: 48px 24px 40px;
+  flex-direction: column;
+  align-items: center;
+  color: var(--ink);
+  background: var(--cream);
+  text-align: center;
+}
+
+.invite-page h1 {
+  margin: 4px 0 0;
+  font-family: 'Gowun Dodum', sans-serif;
+  font-size: 31px;
+  letter-spacing: -1.4px;
+}
+
+.invite-room-card {
+  display: flex;
+  width: 100%;
+  gap: 14px;
+  align-items: center;
+  margin-top: 5px;
+  padding: 18px;
+  border: 1px solid #f2eeeb;
+  border-radius: 20px;
+  background: #fff;
+  text-align: left;
+  box-shadow: 0 8px 24px #5a40300d;
+}
+
+.invite-room-card .room-card__art {
+  width: 64px;
+  min-width: 64px;
+  height: 64px;
+}
+
+.invite-room-card__copy { min-width: 0; }
+.invite-room-card__copy h2 {
+  overflow: hidden;
+  margin: 2px 0 4px;
+  color: var(--ink);
+  font-family: 'Gowun Dodum', sans-serif;
+  font-size: 20px;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.invite-room-card__copy p:not(.section-kicker) {
+  overflow: hidden;
+  margin: 0 0 5px;
+  color: #91878a;
+  font-size: 11px;
+  line-height: 1.5;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.invite-room-card__copy > span {
+  color: #a19a9d;
+  font-size: 10px;
+}
+
+.invite-join-button { margin-top: 19px; }
+.invite-exit-button { margin-top: 4px; }
 
 .auth-brand-mark {
   display: grid;

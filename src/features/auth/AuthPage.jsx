@@ -1,6 +1,6 @@
 import { useState } from 'react'
 
-function AuthPage({ auth }) {
+function AuthPage({ auth, invitePending = false }) {
   const [mode, setMode] = useState('sign-in')
   const [displayName, setDisplayName] = useState('')
   const [email, setEmail] = useState('')
@@ -44,7 +44,7 @@ function AuthPage({ auth }) {
     <div className="auth-brand-mark" aria-hidden="true">ㄷ</div>
     <p className="eyebrow">WORK OUT TOGETHER</p>
     <h1 id="auth-title">득근이<span className="brand-sparkle" aria-hidden="true">✦</span></h1>
-    <p className="auth-description">친구들과 함께 운동 기록을 시작해요.</p>
+    <p className="auth-description">{invitePending ? '로그인하면 초대받은 운동방을 확인하고 참여할 수 있어요.' : '친구들과 함께 운동 기록을 시작해요.'}</p>
     <div className="auth-card">
       <div className="auth-heading"><p className="section-kicker">{isSignUp ? 'JOIN DEUKGEUNI' : 'WELCOME BACK'}</p><h2>{isSignUp ? '새 계정 만들기' : '로그인'}</h2></div>
       <form noValidate onSubmit={submit}>
