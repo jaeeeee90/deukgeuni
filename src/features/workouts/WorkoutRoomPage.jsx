@@ -1,5 +1,6 @@
 import { useMemo, useRef, useState } from 'react'
 import { formatMemberSummary } from '../../utils/memberSummary.js'
+import RoomFriendInviteDialog from '../friends/RoomFriendInviteDialog.jsx'
 import RoomManageDialog from '../rooms/RoomManageDialog.jsx'
 import { exerciseCategories, exercises } from './exerciseCatalog.js'
 import { getExercisesForPicker } from './exerciseSelection.js'
@@ -215,7 +216,7 @@ function ExerciseEntryCard({ entry, exercise, room, members, currentUserId, stat
   return <article className="exercise-entry-card"><div className="exercise-entry-heading"><div className="exercise-entry-title"><span className="exercise-entry-icon" aria-hidden="true">🏋️</span><div><p className="exercise-entry-category">{exercise.categories.join(' · ')}</p><h3>{exercise.name}</h3></div></div><button className="exercise-delete-button" disabled={disabled} type="button" onClick={() => onDelete(entry.id)}>삭제</button></div><div className="member-record-list">{members.map((member) => <MemberRecord actions={actions} currentUserId={currentUserId} disabled={disabled} entryId={entry.id} key={member.id} member={member} recordingMethod={exercise.recordingMethod} sets={getSetsForExercise(state, entry.id, member.id)} />)}</div><span className="visually-hidden">{room.name}</span></article>
 }
 
-function WorkoutRoomPage({ room, onBack, onCreateInvitation, onDeleteRoom, onUpdateRoom, state, currentUserId, onUserChange, actions, storageError, workoutBusy }) {
+function WorkoutRoomPage({ authUser, room, onBack, onCreateInvitation, onDeleteRoom, onUpdateRoom, state, currentUserId, onUserChange, actions, storageError, workoutBusy }) {
   const [date, setDate] = useState(() => getLocalDateKey())
   const [pickerOpen, setPickerOpen] = useState(false)
   const [category, setCategory] = useState(exerciseCategories[0])
@@ -223,6 +224,7 @@ function WorkoutRoomPage({ room, onBack, onCreateInvitation, onDeleteRoom, onUpd
   const [notice, setNotice] = useState('')
   const [deleteEntryId, setDeleteEntryId] = useState(null)
   const [managingRoom, setManagingRoom] = useState(false)
+  const [friendInviteOpen, setFriendInviteOpen] = useState(false)
   const touchStart = useRef(null)
   const disabled = Boolean(storageError || workoutBusy)
   const currentEntries = getExercisesForDate(state, room.id, date)
@@ -241,9 +243,12 @@ function WorkoutRoomPage({ room, onBack, onCreateInvitation, onDeleteRoom, onUpd
   }
   const today = getLocalDateKey()
   const canManageRoom = room.creatorId === currentUserId
+  const canInviteFriends = room.source === 'remote'
+    && authUser?.id
+    && room.members.some((member) => member.id === authUser.id && member.status === 'active')
 
   return <section className="workout-room-page" onTouchStart={handleTouchStart} onTouchEnd={handleTouchEnd}>
-    <header className="workout-room-header"><button className="back-button workout-room-back" type="button" onClick={onBack}><span aria-hidden="true">←</span> 운동방 목록</button><div className="workout-room-heading"><div><p className="section-kicker">WORKOUT ROOM</p><h1>{room.name}</h1><p className="workout-room-members">👥 {formatMemberSummary(room.members)}</p>{room.description && <p className="workout-room-description">{room.description}</p>}</div><span className={`workout-room-mark room-card__art--${room.color}`} aria-hidden="true">{room.symbol}</span></div>{canManageRoom && <button className="room-manage-button" type="button" onClick={() => setManagingRoom(true)}><span aria-hidden="true">⚙</span> 방 관리</button>}<label className="dev-user-picker"><span>기록 확인 사용자</span><select aria-label="개발용 현재 사용자" value={currentUserId} onChange={(event) => onUserChange(event.target.value)}>{sortedMembers.map((member) => <option key={member.id} value={member.id}>{member.name}</option>)}</select></label><p className="demo-storage-note">{room.source === 'remote' ? '이 방의 운동 기록은 Supabase에 저장되며 다른 기기와 공유됩니다.' : '테스트용 임시 기록은 이 브라우저에 저장됩니다.'}</p>{storageError && <p className="storage-protection-notice" role="alert">{room.source === 'remote' ? storageError : '기존 운동 기록을 해석하지 못해 데이터를 보호하고 있습니다. 브라우저 저장 데이터는 변경하지 않았습니다.'}</p>}</header>
+    <header className="workout-room-header"><button className="back-button workout-room-back" type="button" onClick={onBack}><span aria-hidden="true">←</span> 운동방 목록</button><div className="workout-room-heading"><div><p className="section-kicker">WORKOUT ROOM</p><h1>{room.name}</h1><p className="workout-room-members">👥 {formatMemberSummary(room.members)}</p>{room.description && <p className="workout-room-description">{room.description}</p>}</div><span className={`workout-room-mark room-card__art--${room.color}`} aria-hidden="true">{room.symbol}</span></div>{canManageRoom && <button className="room-manage-button" type="button" onClick={() => setManagingRoom(true)}><span aria-hidden="true">⚙</span> 방 관리</button>}{canInviteFriends && !canManageRoom && <button className="room-manage-button" type="button" onClick={() => setFriendInviteOpen(true)}><span aria-hidden="true">＋</span> 친구 초대</button>}<label className="dev-user-picker"><span>기록 확인 사용자</span><select aria-label="개발용 현재 사용자" value={currentUserId} onChange={(event) => onUserChange(event.target.value)}>{sortedMembers.map((member) => <option key={member.id} value={member.id}>{member.name}</option>)}</select></label><p className="demo-storage-note">{room.source === 'remote' ? '이 방의 운동 기록은 Supabase에 저장되며 다른 기기와 공유됩니다.' : '테스트용 임시 기록은 이 브라우저에 저장됩니다.'}</p>{storageError && <p className="storage-protection-notice" role="alert">{room.source === 'remote' ? storageError : '기존 운동 기록을 해석하지 못해 데이터를 보호하고 있습니다. 브라우저 저장 데이터는 변경하지 않았습니다.'}</p>}</header>
     <div className="workout-date-picker"><button className="date-arrow" type="button" aria-label="이전 날짜" onClick={() => changeDate(-1)}>‹</button><div className="workout-date-label"><span className="workout-date-icon" aria-hidden="true">▦</span><span>{formatDate(date)}</span>{date === today && <span className="today-badge">오늘</span>}</div><button className="date-arrow" type="button" aria-label="다음 날짜" onClick={() => changeDate(1)}>›</button></div>
     <p className="swipe-hint">화면을 좌우로 밀어 날짜를 바꿀 수 있어요.</p>
     <AttendanceControl actions={actions} currentUserId={currentUserId} date={date} disabled={disabled} roomId={room.id} state={state} />
@@ -252,7 +257,8 @@ function WorkoutRoomPage({ room, onBack, onCreateInvitation, onDeleteRoom, onUpd
     {currentEntries.length === 0 ? <div className="empty-workout-state"><span className="empty-workout-icon" aria-hidden="true">🌱</span><p>이 날짜에는 아직 운동 종목이 없어요.</p><span>운동 종목을 추가해 기록을 시작해 보세요.</span></div> : <div className="exercise-entry-list">{currentEntries.map((entry) => <ExerciseEntryCard actions={actions} currentUserId={currentUserId} disabled={disabled} entry={entry} exercise={exercisesById.get(entry.exerciseId)} key={entry.id} members={sortedMembers} onDelete={setDeleteEntryId} room={room} state={state} />)}</div>}
     {pickerOpen && <ExercisePicker actions={actions} category={category} currentUserId={currentUserId} disabled={disabled} notice={pickerNotice} onCategoryChange={setCategory} onChoose={chooseExercise} onClose={() => setPickerOpen(false)} roomId={room.id} state={state} />}
     {deleteEntryId && deleteExercise && <DeleteExerciseDialog disabled={disabled} exerciseName={deleteExercise.name} onCancel={() => setDeleteEntryId(null)} onConfirm={async () => { const result = await actions.removeExercise(deleteEntryId); if (result?.error) { setNotice(result.error); return } setDeleteEntryId(null); setNotice(`${deleteExercise.name}과 연결된 모든 세트 기록을 삭제했어요.`) }} />}
-    {managingRoom && <RoomManageDialog room={room} onClose={() => setManagingRoom(false)} onCreateInvitation={onCreateInvitation} onDelete={onDeleteRoom} onSave={async (input) => { const result = await onUpdateRoom(input); if (!result?.error) setManagingRoom(false); return result }} />}
+    {managingRoom && <RoomManageDialog authUser={authUser} room={room} onClose={() => setManagingRoom(false)} onCreateInvitation={onCreateInvitation} onDelete={onDeleteRoom} onSave={async (input) => { const result = await onUpdateRoom(input); if (!result?.error) setManagingRoom(false); return result }} />}
+    {friendInviteOpen && <RoomFriendInviteDialog room={room} user={authUser} onClose={() => setFriendInviteOpen(false)} />}
   </section>
 }
 

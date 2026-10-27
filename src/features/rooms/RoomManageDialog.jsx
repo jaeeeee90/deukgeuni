@@ -1,4 +1,5 @@
 import { useState } from 'react'
+import RoomFriendInviteDialog from '../friends/RoomFriendInviteDialog.jsx'
 import InviteLinkPanel from '../invitations/InviteLinkPanel.jsx'
 import { roomIconOptions } from './roomData.js'
 
@@ -9,12 +10,13 @@ function getErrorMessage(error) {
   return '방 정보를 저장하지 못했어요. 다시 시도해 주세요.'
 }
 
-function RoomManageDialog({ room, onClose, onCreateInvitation, onDelete, onSave }) {
+function RoomManageDialog({ authUser, room, onClose, onCreateInvitation, onDelete, onSave }) {
   const [name, setName] = useState(room.name)
   const [description, setDescription] = useState(room.description ?? '')
   const [selectedIcon, setSelectedIcon] = useState(`${room.symbol}:${room.color}`)
   const [error, setError] = useState('')
   const [confirmingDelete, setConfirmingDelete] = useState(false)
+  const [friendInviteOpen, setFriendInviteOpen] = useState(false)
   const [saving, setSaving] = useState(false)
   const selected = roomIconOptions.find((option) => `${option.symbol}:${option.color}` === selectedIcon)
 
@@ -68,6 +70,7 @@ function RoomManageDialog({ room, onClose, onCreateInvitation, onDelete, onSave 
           {error && <p className="field-error room-form-error" role="alert">{error}</p>}
           <button className="home-button room-submit-button" disabled={saving} type="submit">{saving ? '저장 중…' : '변경 사항 저장'}</button>
           {room.source === 'remote' && onCreateInvitation && <InviteLinkPanel roomId={room.id} onCreate={onCreateInvitation} />}
+          {room.source === 'remote' && authUser && <button className="secondary-action room-friend-invite-trigger" disabled={saving} type="button" onClick={() => setFriendInviteOpen(true)}>친구 초대</button>}
           <button className="room-delete-trigger" disabled={saving} type="button" onClick={() => { setError(''); setConfirmingDelete(true) }}>운동방 삭제</button>
         </form> : <div className="room-delete-confirmation">
           <div className="delete-dialog__icon" aria-hidden="true">!</div>
@@ -80,6 +83,7 @@ function RoomManageDialog({ room, onClose, onCreateInvitation, onDelete, onSave 
           </div>
         </div>}
       </section>
+      {friendInviteOpen && <RoomFriendInviteDialog room={room} user={authUser} onClose={() => setFriendInviteOpen(false)} />}
     </div>
   )
 }

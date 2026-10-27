@@ -410,6 +410,222 @@
   font-size: 10px;
 }
 
+.friends-page {
+  padding-bottom: 42px;
+}
+
+.friend-sync-error {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+  margin: -8px 0 16px;
+  padding: 10px 12px;
+  border: 1px solid #eacdc3;
+  border-radius: 12px;
+  color: #a55f52;
+  background: #fff3ee;
+  font-size: 11px;
+  line-height: 1.5;
+}
+
+.friend-sync-error button {
+  flex-shrink: 0;
+  padding: 5px 7px;
+  border: 0;
+  border-radius: 7px;
+  color: #9b5d52;
+  background: #fff;
+  font: inherit;
+  font-size: 10px;
+  cursor: pointer;
+}
+
+.my-friend-code-card {
+  position: relative;
+  display: flex;
+  min-height: 104px;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  margin-bottom: 24px;
+  padding: 16px;
+  border: 1px solid #f1e3dc;
+  border-radius: 18px;
+  background: #fffaf6;
+}
+
+.my-friend-code-card h2 {
+  margin: 2px 0 4px;
+  color: var(--ink);
+  font-family: 'Gowun Dodum', sans-serif;
+  font-size: 22px;
+  letter-spacing: 1px;
+}
+
+.my-friend-code-card p:not(.section-kicker) {
+  margin: 0;
+  color: #94898d;
+  font-size: 10px;
+  line-height: 1.5;
+}
+
+.my-friend-code-card .secondary-action {
+  flex-shrink: 0;
+  min-height: 36px;
+  padding: 0 11px;
+}
+
+.friend-action-status {
+  position: absolute;
+  right: 16px;
+  bottom: 7px;
+  color: #6e9478;
+  font-size: 9px;
+}
+
+.friend-search-section,
+.friend-list-section {
+  margin-top: 25px;
+}
+
+.friend-section-heading {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 10px;
+}
+
+.friend-section-heading h2 {
+  margin: 2px 0 0;
+  color: var(--ink);
+  font-family: 'Gowun Dodum', sans-serif;
+  font-size: 18px;
+}
+
+.friend-section-heading h2 span {
+  margin-left: 3px;
+  color: #d38b75;
+  font-family: inherit;
+  font-size: 14px;
+}
+
+.friend-search-form {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
+  gap: 8px;
+}
+
+.friend-search-form .text-field {
+  min-width: 0;
+  min-height: 43px;
+  font-size: 12px;
+  letter-spacing: 1px;
+}
+
+.friend-search-form .home-button {
+  min-width: 66px;
+  min-height: 43px;
+  margin-top: 0;
+  padding: 0 12px;
+}
+
+.friend-search-result {
+  display: flex;
+  min-height: 62px;
+  align-items: center;
+  gap: 10px;
+  margin-top: 10px;
+  padding: 9px 11px;
+  border: 1px solid #f2eeeb;
+  border-radius: 15px;
+  background: #fff;
+}
+
+.friend-search-result .secondary-action {
+  min-height: 34px;
+  padding: 0 10px;
+}
+
+.friend-item-actions {
+  display: flex;
+  flex-shrink: 0;
+  align-items: center;
+  gap: 8px;
+}
+
+.friend-inline-button {
+  padding: 4px 5px;
+  border: 0;
+  color: #9a9195;
+  background: transparent;
+  font: inherit;
+  font-size: 10px;
+  cursor: pointer;
+}
+
+.friend-inline-button--accept {
+  color: #d27d68;
+  font-weight: 700;
+}
+
+.friend-avatar--image {
+  object-fit: cover;
+}
+
+.room-invitation-item {
+  align-items: center;
+}
+
+.room-invitation-symbol {
+  display: grid;
+  width: 42px;
+  min-width: 42px;
+  height: 42px;
+  place-items: center;
+  border-radius: 15px;
+  font-size: 20px;
+}
+
+.room-invitation-copy {
+  display: grid;
+  min-width: 0;
+  flex: 1;
+  gap: 3px;
+}
+
+.room-invitation-copy b {
+  overflow: hidden;
+  color: var(--ink);
+  font-family: 'Gowun Dodum', sans-serif;
+  font-size: 13px;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.room-invitation-copy small {
+  overflow: hidden;
+  color: #a39ca1;
+  font-size: 10px;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.friend-empty-state,
+.friend-loading {
+  margin: 0;
+  padding: 18px 10px;
+  border: 1px dashed #eadfd8;
+  border-radius: 14px;
+  color: #9a9195;
+  background: #fffdfb;
+  font-size: 11px;
+  line-height: 1.6;
+  text-align: center;
+}
+
+.friend-loading { margin-top: 24px; }
+
 .page-footnote {
   margin: 18px 2px 0;
   color: #a39ca1;
@@ -1648,6 +1864,107 @@
   font-size: 10px;
   text-decoration: underline;
   cursor: pointer;
+}
+
+.room-friend-invite-trigger {
+  display: block;
+  width: 100%;
+  min-height: 42px;
+  margin-top: 10px;
+}
+
+.room-friend-invite-dialog {
+  width: min(calc(100% - 28px), 500px);
+  max-height: min(88svh, 720px);
+  overflow-y: auto;
+  margin: auto;
+  padding: 19px 18px calc(19px + env(safe-area-inset-bottom));
+  border: 1px solid #f0ece8;
+  border-radius: 21px;
+  background: #fffaf6;
+  box-shadow: 0 12px 40px #30251f33;
+}
+
+.room-friend-invite-description {
+  margin: 11px 0 15px;
+  color: #8d8588;
+  font-size: 11px;
+  line-height: 1.6;
+}
+
+.room-friend-invite-description b {
+  color: #5f5962;
+}
+
+.room-friend-invite-list {
+  display: grid;
+  gap: 8px;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.room-friend-invite-item {
+  display: flex;
+  min-height: 62px;
+  align-items: center;
+  gap: 10px;
+  padding: 9px 11px;
+  border: 1px solid #f0ece8;
+  border-radius: 15px;
+  background: #fff;
+}
+
+.room-friend-invite-item.is-disabled {
+  background: #faf7f5;
+}
+
+.room-friend-invite-item label {
+  display: flex;
+  min-width: 0;
+  flex: 1;
+  align-items: center;
+  gap: 10px;
+  cursor: pointer;
+}
+
+.room-friend-invite-item.is-disabled label {
+  cursor: default;
+}
+
+.room-friend-invite-item input {
+  width: 17px;
+  height: 17px;
+  accent-color: #e58b73;
+}
+
+.room-friend-invite-status {
+  flex-shrink: 0;
+  color: #6e9478;
+  font-size: 10px;
+}
+
+.room-friend-invite-status.is-muted {
+  color: #aaa1a4;
+}
+
+.room-friend-invite-actions {
+  display: grid;
+  grid-template-columns: 1fr 1.4fr;
+  gap: 8px;
+  margin-top: 16px;
+}
+
+.room-friend-invite-actions .secondary-action,
+.room-friend-invite-actions .home-button {
+  min-height: 43px;
+  margin-top: 0;
+}
+
+.room-friend-invite-dialog > .friend-action-status {
+  position: static;
+  display: block;
+  margin: 11px 0 0;
 }
 
 .room-delete-confirmation {

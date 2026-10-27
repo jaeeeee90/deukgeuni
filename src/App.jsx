@@ -1,4 +1,4 @@
-import { lazy, Suspense, useCallback, useMemo, useState } from 'react'
+import { useCallback, useMemo, useState } from 'react'
 import BottomNav from './components/BottomNav.jsx'
 import AuthPage from './features/auth/AuthPage.jsx'
 import { useAuth } from './features/auth/useAuth.js'
@@ -24,10 +24,6 @@ import WorkoutRoomPage from './features/workouts/WorkoutRoomPage.jsx'
 import { useWorkoutStore } from './features/workouts/useWorkoutStore.js'
 import { useRemoteWorkoutStore } from './features/workouts/useRemoteWorkoutStore.js'
 import './App.css'
-
-const DevRlsTestPanel = import.meta.env.DEV
-  ? lazy(() => import('./features/dev/RlsTestPanel.jsx'))
-  : null
 
 const pages = {
   home: HomePage,
@@ -142,6 +138,11 @@ function AuthenticatedApp({ authUser, onClearInvite, pendingInviteToken }) {
     setActiveScreen('home')
   }
 
+  const refreshRoomsAfterInvitation = async () => {
+    const refreshed = await remoteRoomStore.actions.loadRooms({ force: true })
+    return refreshed.error ? { error: refreshed.error } : { error: null }
+  }
+
   if (pendingInviteToken !== null) {
     return <InvitePage onAccepted={completeInvitation} onExit={exitInvitation} token={pendingInviteToken} />
   }
@@ -153,6 +154,7 @@ function AuthenticatedApp({ authUser, onClearInvite, pendingInviteToken }) {
       <main className="main-content">
         {selectedRoom ? (
           <WorkoutRoomPage
+            authUser={authUser}
             actions={activeWorkoutActions}
             currentUserId={currentUserId}
             onBack={() => setSelectedRoomId(null)}
@@ -167,6 +169,7 @@ function AuthenticatedApp({ authUser, onClearInvite, pendingInviteToken }) {
           />
         ) : (
           <Page
+            authUser={authUser}
             currentUser={currentUser}
             onCreateRoom={createRoom}
             onOpenRoom={openRoom}
@@ -175,11 +178,11 @@ function AuthenticatedApp({ authUser, onClearInvite, pendingInviteToken }) {
             onRetryRooms={remoteRoomStore.actions.loadRooms}
             rooms={allRooms}
             roomSaving={remoteRoomStore.saving}
+            onRoomInvitationAccepted={refreshRoomsAfterInvitation}
           />
         )}
       </main>
       <BottomNav activeScreen={activeScreen} onNavigate={navigateTo} />
-      {DevRlsTestPanel && <Suspense fallback={null}><DevRlsTestPanel /></Suspense>}
     </div>
   )
 }

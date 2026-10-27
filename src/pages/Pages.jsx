@@ -1,8 +1,7 @@
 import { useState } from 'react'
 import RoomCard from '../components/RoomCard.jsx'
+import FriendsFeaturePage from '../features/friends/FriendsPage.jsx'
 import { roomIconOptions } from '../features/rooms/roomData.js'
-
-const exampleFriends = ['김서윤', '박하준', '이도윤']
 
 export function HomePage({ onOpenRoom, onRetryRooms, roomError, roomLoading, rooms }) {
   return (
@@ -34,26 +33,8 @@ export function HomePage({ onOpenRoom, onRetryRooms, roomError, roomLoading, roo
   )
 }
 
-export function FriendsPage() {
-  return (
-    <section className="page-section" aria-labelledby="friends-heading">
-      <p className="section-kicker">YOUR CREW</p>
-      <h1 className="page-title" id="friends-heading">친구목록</h1>
-      <p className="page-description">함께 운동하는 친구들이에요.</p>
-      <ul className="friend-list">
-        {exampleFriends.map((friend, index) => (
-          <li className="friend-item" key={friend}>
-            <span className={`friend-avatar friend-avatar--${index + 1}`} aria-hidden="true">
-              {friend.slice(0, 1)}
-            </span>
-            <span className="friend-name">{friend}</span>
-            <span className="friend-status">운동 친구</span>
-          </li>
-        ))}
-      </ul>
-      <p className="page-footnote">QR코드 친구 추가 기능은 다음 단계에서 준비할게요.</p>
-    </section>
-  )
+export function FriendsPage(props) {
+  return <FriendsFeaturePage {...props} />
 }
 
 export function CreateRoomPage({ currentUser, onCreateRoom, roomSaving }) {
